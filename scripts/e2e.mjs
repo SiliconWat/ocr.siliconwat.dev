@@ -45,15 +45,22 @@ try {
       if (m.method === "Runtime.consoleAPICalled" && ["error", "warning"].includes(m.params.type)) problems.push(`console.${m.params.type}: ` + m.params.args.map((a) => a.value ?? a.description).join(" "));
       if (m.method === "Log.entryAdded" && ["error", "warning"].includes(m.params.entry.level)) problems.push(`log.${m.params.entry.level}: ${m.params.entry.text}`);
     });
-    await send("Runtime.enable", {}, s); await send("Log.enable", {}, s); await send("Page.enable", {}, s); await send("DOM.enable", {}, s);
+    await send("Runtime.enable", {}, s); await send("Performance.enable", {}, s); await send("Log.enable", {}, s); await send("Page.enable", {}, s); await send("DOM.enable", {}, s);
     await send("Page.navigate", { url: "http://localhost:4318/" }, s);
     for (let i = 0; i < 40 && !(await evalIn(s, "!!document.querySelector('#pick-file')")); i++) await sleep(250);
     const { root } = await send("DOM.getDocument", {}, s);
     const { nodeId } = await send("DOM.querySelector", { nodeId: root.nodeId, selector: "#pick-file" }, s);
     const t0 = Date.now();
     await send("DOM.setFileInputFiles", { nodeId, files: [f] }, s);
+    let chooser = null;
     if (range) {   // the page chooser (state 1b): A range, tap the first and last page, Read these pages
-      for (let i = 0; i < 60 && !(await evalIn(s, "!!document.querySelector('[data-n]')")); i++) await sleep(250);
+      for (let i = 0; i < 240 && !(await evalIn(s, "!!document.querySelector('[data-n]')")); i++) await sleep(250);
+      await sleep(2000);   // let the first thumbnails draw
+      const heap = (await send("Performance.getMetrics", {}, s).catch(async () => { await send("Performance.enable", {}, s); return send("Performance.getMetrics", {}, s); })).metrics;
+      chooser = { seconds: (Date.now() - t0) / 1000, pages: await evalIn(s, "document.querySelectorAll('[data-n]').length"),
+        thumbsDrawn: await evalIn(s, "[...document.querySelectorAll('[data-n] img')].filter(i => i.getAttribute('src')).length"),
+        heapMB: Math.round((heap.find((m) => m.name === "JSHeapUsedSize")?.value ?? 0) / 1e6) };
+      await evalIn(s, `document.querySelector('[data-n="${range[1]}"]')?.scrollIntoView()`);
       await evalIn(s, `(() => { const b = (re) => [...document.querySelectorAll('button')].find(x => re.test(x.textContent.trim()));
         b(/^A range$/).click(); document.querySelector('[data-n="${range[0]}"]').click(); document.querySelector('[data-n="${range[1]}"]').click();
         setTimeout(() => b(/^Read these pages$/).click(), 300); })()`);
@@ -85,7 +92,8 @@ try {
       } else heard = { button: false };
       console.log(`  listen: ${JSON.stringify(heard)}`);
     }
-    results.push({ file: f, seconds: (Date.now() - t0) / 1000, finished: done, ...page, problems, heard });
+    const end = (await send("Performance.getMetrics", {}, s)).metrics;
+    results.push({ file: f, seconds: (Date.now() - t0) / 1000, finished: done, ...page, problems, heard, chooser, heapEndMB: Math.round((end.find((m) => m.name === "JSHeapUsedSize")?.value ?? 0) / 1e6) });
     console.log(`${f.split("/").pop()}: ${done ? "read" : "TIMED OUT"} in ${((Date.now() - t0) / 1000).toFixed(0)} s · ${page.lines.length} lines · leaf ${page.leaf} · ${problems.length} console/CSP problems`);
     await send("Target.closeTarget", { targetId });
   }
