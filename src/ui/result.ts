@@ -53,6 +53,8 @@ export class OcrResult extends Light {
   declare tap: Tap | null;
   declare roman: boolean;
   declare sel: string;
+  /** the selection, when it is exactly one word inside one line: the keyboard's way to the dictionary (a tap needs a pointer) */
+  private selWord: { run: number; line: number; offset: number } | null = null;
   declare voice: Voice;
   declare speaking: "" | "busy" | "playing";
 
@@ -91,6 +93,13 @@ export class OcrResult extends Light {
     if (s && !s.isCollapsed && s.rangeCount && area) {
       const r = s.getRangeAt(0);
       if (area.contains(r.commonAncestorContainer)) text = s.toString().replace(/\s+\n/g, "\n").trim();
+      this.selWord = null;
+      const lineEl = (r.startContainer.nodeType === Node.ELEMENT_NODE ? (r.startContainer as Element) : r.startContainer.parentElement)?.closest<HTMLElement>("[data-line]");
+      const box = lineEl?.closest<HTMLElement>("[data-run]");
+      if (text && lineEl && box && !box.classList.contains("rom") && lineEl.contains(r.endContainer) && !/[\s។]/.test(text)) {
+        const upto = document.createRange(); upto.setStart(lineEl, 0); upto.setEnd(r.startContainer, r.startOffset);
+        this.selWord = { run: +box.dataset.run!, line: +lineEl.dataset.line!, offset: upto.toString().length };
+      }
     }
     window.clearTimeout(this.hideTimer);
     if (text) this.sel = text;
@@ -185,6 +194,7 @@ export class OcrResult extends Light {
         @mousedown=${(e: Event) => e.preventDefault()}>
         ${listenOn ? html`<button class=${item} ?disabled=${this.speaking === "busy"} @click=${this.listen}>
           ${this.speaking === "busy" ? dots() : html`${SPEAK()}${t(this.speaking === "playing" ? "stop" : "listen")}`}</button>` : ""}
+        ${this.selWord ? html`<button class=${item} @click=${() => this.emit("word", this.selWord!)}>${t("meaning")}</button>` : ""}
         <button class=${item} @click=${() => this.emit("ask", { passage: this.sel })}>${ASK()}${t("askAbout")}</button>
         <button class=${item} @click=${this.copySel}>${COPY()}${t("copy")}</button>
       </div>
