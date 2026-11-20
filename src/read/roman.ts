@@ -25,7 +25,8 @@ function reorderSignBeforeCoeng(s: string): string {
 /** Subscript DA and subscript TA print alike, and Pāli has no tṭ or nṭ: after ត or ន the subscript is TA. */
 const subscriptTa = (s: string) => s.split("ត្ដ").join("ត្ត").split("ន្ដ").join("ន្ត");
 
-export function toRoman(text: string): string {
+/** The exact port (the parity check compares this one). */
+export function transliterate(text: string): string {
   const s = subscriptTa(reorderSignBeforeCoeng(reorderCoengRo(text)));
   const out: string[] = []; let i = 0; const n = s.length;
   while (i < n) {
@@ -54,3 +55,6 @@ export function toRoman(text: string): string {
   }
   return out.join("").split("bv").join("bb");   // Khmer writes Pāli bb as ព្វ (sabba = សព្វ)
 }
+
+/** What the page shows: the same, with no space before a full stop ("sammāsambuddhassa.", as the CST prints it). */
+export const toRoman = (text: string) => transliterate(text).replace(/ +\./g, ".");

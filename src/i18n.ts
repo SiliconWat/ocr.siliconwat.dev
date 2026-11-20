@@ -1,0 +1,212 @@
+/** The page's words, in English and Khmer, copied EXACTLY from the drawings (demo.siliconwat.dev, build-boards.py: the
+ *  `t("English", "Khmer")` calls). ⚠️ The Khmer is OUR DRAFT until a native reader approves it; the page says so in a band.
+ *
+ *  Three kinds of entry, marked where they sit:
+ *    · drawn — both languages from the drawings, verbatim;
+ *    · KM UNDRAWN (`null`) — the drawings give English only (the desktop boards); the page shows the English, marked lang="en";
+ *    · NOT DRAWN — words the drawings do not have at all (toasts, problems, a range's page heading, the no-entry line).
+ *      Ours, in both languages, until the drawings or the founder settle them.
+ *  ⛔ Barred in the rendered text: sign in, deposit, savings, interest, yield, bank, and a vendor or AI model named as an author. */
+import { store, KEYS } from "./ui/prefs";
+
+export type Lang = "en" | "km";
+
+const S = {
+  // ── header, footer, band ───────────────────────────────────────────────────────────────────────────────────────────
+  share: ["Share", "ចែករំលែក"],
+  aboutLink: ["About and credits", "អំពី និងការទទួលស្គាល់"],
+  visits: ["Visits are counted without cookies.", "ការចូលមើលត្រូវបានរាប់ដោយគ្មានខូគី។"],
+  system: ["System", "ប្រព័ន្ធ"],
+  light: ["Light", "ភ្លឺ"],
+  dark: ["Dark", "ងងឹត"],
+  // ── 1 · empty ──────────────────────────────────────────────────────────────────────────────────────────────────────
+  title: ["Read a page of the Tipiṭaka", "អានទំព័រមួយនៃព្រះត្រៃបិដក"],
+  lede: ["Pāli and Khmer printed in Khmer script, from the Buddhist Institute edition (1927–69). Free, and read on this device.",
+    "បាលី និងខ្មែរ ដែលបោះពុម្ពជាអក្សរខ្មែរ ពីព្រះត្រៃបិដកបោះពុម្ពរបស់ពុទ្ធសាសនបណ្ឌិត្យ (១៩២៧–១៩៦៩)។ ឥតគិតថ្លៃ ហើយអាននៅលើឧបករណ៍នេះ។"],
+  dropTitle: ["Drop a page here", "ទម្លាក់ទំព័រនៅទីនេះ"],
+  dropSub: ["A photo, a scan or a PDF", "រូបថត ស្កេន ឬ PDF"],
+  chooseFile: ["Choose a file", "ជ្រើសរើសឯកសារ"],
+  takePhoto: ["Take a photo", "ថតរូប"],
+  privacy: ["Your page is read on this device. It is never uploaded.",
+    "ទំព័ររបស់អ្នកត្រូវបានអាននៅលើឧបករណ៍នេះ។ វាមិនត្រូវបានផ្ញើទៅកន្លែងណាឡើយ។"],
+  readerHead: ["Reader", "ម៉ូដែលអាន"],
+  accurate: ["Most accurate", "ត្រឹមត្រូវបំផុត"],
+  accurateSub: ["The fewest mistakes. Chosen for you.", "កំហុសតិចបំផុត។ បានជ្រើសរើសជូនអ្នក។"],
+  public: ["Public domain", "កម្មសិទ្ធិសាធារណៈ"],
+  publicSub: ["A few more mistakes. Its file belongs to everyone.", "កំហុសច្រើនជាងបន្តិច។ ឯកសាររបស់វាជាកម្មសិទ្ធិរបស់មនុស្សគ្រប់គ្នា។"],
+  licenseNote: ["The license matters only if you share the model file itself.",
+    "អាជ្ញាប័ណ្ណមានន័យ តែនៅពេលអ្នកចែករំលែកឯកសារម៉ូដែលនោះផ្ទាល់ប៉ុណ្ណោះ។"],
+  whatReads: ["What it reads", "អ្វីដែលវាអាន"],
+  // D1 (desktop, drawn in English only) — KM UNDRAWN
+  whatReadsShort: ["Both pages of each opening: the Pāli, and its Khmer translation. It tells which one a page is, and you can switch it.", null],
+  // ── 1b · PDF page chooser ──────────────────────────────────────────────────────────────────────────────────────────
+  choosePages: ["Choose pages", "ជ្រើសរើសទំព័រ"],
+  nPages: ["{n} pages", "{n} ទំព័រ"],
+  onePage: ["One page", "មួយទំព័រ"],
+  aRange: ["A range", "ចន្លោះទំព័រ"],
+  fromPage: ["From page", "ពីទំព័រ"],
+  toPage: ["To page", "ដល់ទំព័រ"],
+  pagesInFile: ["Pages in this file", "ទំព័រក្នុងឯកសារនេះ"],
+  pagesNote: ["Pages are read in order, one at a time, on this device. A whole volume is long, so choose the pages you need.",
+    "ទំព័រត្រូវបានអានតាមលំដាប់ ម្តងមួយទំព័រ នៅលើឧបករណ៍នេះ។ សៀវភៅមួយក្បាលវែងណាស់ ដូច្នេះសូមជ្រើសតែទំព័រដែលអ្នកត្រូវការ។"],
+  readThese: ["Read these pages", "អានទំព័រទាំងនេះ"],
+  chooseAnother: ["Choose another file", "ជ្រើសឯកសារផ្សេង"],
+  // NOT DRAWN: the one field of "One page" (the drawings show only "A range"); ទំព័រ is the drawings' own word
+  page: ["Page", "ទំព័រ"],
+  // NOT DRAWN: the small heading over each page's text when a range is read
+  pageN: ["Page {n}", "ទំព័រ {n}"],
+  // ── 2 · first use ──────────────────────────────────────────────────────────────────────────────────────────────────
+  ready: ["Getting the reader ready", "កំពុងរៀបចំម៉ូដែលអាន"],
+  readyLede: ["This happens once. The reader is kept in this browser, so next time it starts straight away.",
+    "ការនេះកើតឡើងតែម្តង។ ម៉ូដែលត្រូវបានរក្សាទុកក្នុងកម្មវិធីរុករកនេះ ដូច្នេះលើកក្រោយវាចាប់ផ្តើមភ្លាមៗ។"],
+  waiting: ["Your page, waiting to be read", "ទំព័ររបស់អ្នក កំពុងរង់ចាំការអាន"],
+  working: ["Working", "កំពុងដំណើរការ"],
+  fromSite: ["It comes from this site, not from anywhere else, and your page stays on this device.",
+    "វាមកពីគេហទំព័រនេះ មិនមែនពីកន្លែងផ្សេងទេ ហើយទំព័ររបស់អ្នកនៅតែលើឧបករណ៍នេះ។"],
+  // ── 3 · reading ────────────────────────────────────────────────────────────────────────────────────────────────────
+  reading: ["Reading", "កំពុងអាន"],
+  leafIs: ["This page is in", "ទំព័រនេះជា"],
+  pali: ["Pāli", "បាលី"],
+  khmer: ["Khmer", "ខ្មែរ"],
+  leafNote: ["Found by the reader. Tap the other to switch.", "ម៉ូដែលបានរកឃើញ។ ចុចមួយទៀត ដើម្បីប្តូរ។"],
+  readSoFar: ["Read so far", "បានអានរួច"],
+  stop: ["Stop", "បញ្ឈប់"],
+  // D4 (desktop) — "Your page": KM is the drawings' own ទំព័ររបស់អ្នក (from S2's caption); the caption under it is KM UNDRAWN
+  yourPage: ["Your page", "ទំព័ររបស់អ្នក"],
+  linesOutlined: ["The lines it found are outlined. Check the text against them.", null],
+  // ── 4 · result ─────────────────────────────────────────────────────────────────────────────────────────────────────
+  theText: ["The text", "អត្ថបទ"],
+  roman: ["Show in roman letters", "បង្ហាញជាអក្សរឡាតាំង"],
+  copy: ["Copy", "ចម្លង"],
+  download: ["Download .txt", "ទាញយក .txt"],
+  checkPrint: ["Check it against the print.", "សូមផ្ទៀងផ្ទាត់វាជាមួយសៀវភៅបោះពុម្ព។"],
+  tapHint: ["Tap a word for its meaning. Select words to hear them or ask about them.",
+    "ចុចលើពាក្យមួយ ដើម្បីមើលន័យ។ ជ្រើសពាក្យ ដើម្បីស្តាប់ ឬសួរអំពីវា។"],
+  // D4's computer wording; the Khmer ចុច is both "tap" and "click", so it is the drawn Khmer of tapHint
+  clickHint: ["Click a word for its meaning. Select words to hear them or ask about them.",
+    "ចុចលើពាក្យមួយ ដើម្បីមើលន័យ។ ជ្រើសពាក្យ ដើម្បីស្តាប់ ឬសួរអំពីវា។"],
+  // the hints' first sentence alone, while Listen is not available (a sentence about hearing would promise a missing button)
+  tapHintNoListen: ["Tap a word for its meaning.", "ចុចលើពាក្យមួយ ដើម្បីមើលន័យ។"],
+  clickHintNoListen: ["Click a word for its meaning.", "ចុចលើពាក្យមួយ ដើម្បីមើលន័យ។"],
+  romanNote: ["Roman letters are our own transliteration, for convenience. The Khmer script is the text.",
+    "អក្សរឡាតាំងជាការចម្លងអក្សររបស់យើង ដើម្បីភាពងាយស្រួល។ អក្សរខ្មែរគឺជាអត្ថបទ។"],
+  readAnother: ["Read another page", "អានទំព័រផ្សេងទៀត"],
+  // ── 5 · nothing found ──────────────────────────────────────────────────────────────────────────────────────────────
+  nothingTitle: ["No lines of text found", "រកមិនឃើញបន្ទាត់អត្ថបទទេ"],
+  nothingLede: ["The reader found no printed lines in this picture.", "ម៉ូដែលរកមិនឃើញបន្ទាត់អក្សរបោះពុម្ពក្នុងរូបនេះទេ។"],
+  whatHelps: ["What helps", "អ្វីដែលជួយបាន"],
+  help1: ["A flat page, well lit, with no shadow across it.", "ទំព័ររាបស្មើ មានពន្លឺល្អ គ្មានស្រមោលពាក់កណ្តាល។"],
+  help2: ["The whole page in the picture, taken straight on.", "ទំព័រទាំងមូលនៅក្នុងរូប ថតត្រង់ពីលើ។"],
+  help3: ["A page of the Buddhist Institute edition (1927–69).", "ទំព័រនៃព្រះត្រៃបិដកបោះពុម្ពរបស់ពុទ្ធសាសនបណ្ឌិត្យ (១៩២៧–១៩៦៩)។"],
+  scanBest: ["A scan reads best. Photos from a phone have not been measured yet.",
+    "ស្កេនអានបានល្អបំផុត។ រូបថតពីទូរសព្ទ មិនទាន់ត្រូវបានវាស់វែងនៅឡើយទេ។"],
+  tryAnother: ["Try another page", "សាកល្បងទំព័រផ្សេង"],
+  // ── 6 · not this print ─────────────────────────────────────────────────────────────────────────────────────────────
+  otherTitle: ["This may not be the print it knows", "នេះប្រហែលមិនមែនជាអក្សរបោះពុម្ពដែលវាស្គាល់ទេ"],
+  otherLede: ["The reader was trained on one edition's typeface, the Buddhist Institute's Tipiṭaka (1927–69), and reads other prints poorly.",
+    "ម៉ូដែលនេះត្រូវបានបង្ហាត់លើពុម្ពអក្សរនៃការបោះពុម្ពតែមួយ គឺព្រះត្រៃបិដករបស់ពុទ្ធសាសនបណ្ឌិត្យ (១៩២៧–១៩៦៩) ហើយអានការបោះពុម្ពផ្សេងៗបានមិនល្អទេ។"],
+  showAnyway: ["Show what it read anyway", "បង្ហាញអ្វីដែលវាបានអាន"],
+  // ── 7 · about and credits ──────────────────────────────────────────────────────────────────────────────────────────
+  aboutTitle: ["About and credits", "អំពី និងការទទួលស្គាល់"],
+  whatReadsLong: ["Pāli and Khmer printed in Khmer script: both pages of each opening of the Buddhist Institute edition of the Tipiṭaka (Phnom Penh, 1927–69). It tells which one a page is, and you can switch it.",
+    "បាលី និងខ្មែរ ដែលបោះពុម្ពជាអក្សរខ្មែរ៖ ទំព័រទាំងពីរនៃការបើកនីមួយៗ នៃព្រះត្រៃបិដកបោះពុម្ពរបស់ពុទ្ធសាសនបណ្ឌិត្យ (ភ្នំពេញ ១៩២៧–១៩៦៩)។ វាដឹងថាទំព័រនីមួយៗជាភាសាណា ហើយអ្នកអាចប្តូរវាបាន។"],
+  howWell: ["How well it reads", "វាអានបានល្អប៉ុណ្ណា"],
+  howWell1: ["On Pāli pages the models never saw, Most accurate got 1.5% of characters wrong, and Public domain 2.3%. Khmer pages: [ figure to come ].",
+    "លើទំព័របាលីដែលម៉ូដែលមិនធ្លាប់ឃើញ ត្រឹមត្រូវបំផុត ខុស ១,៥% នៃតួអក្សរ ហើយ កម្មសិទ្ធិសាធារណៈ ខុស ២,៣%។ ទំព័រខ្មែរ៖ [ តួលេខនឹងមកដល់ ]។"],
+  howWell2: ["It was trained on one edition's typeface and learned from one transcriber's typing, including some of their habits. The Vinaya volumes read least well, and photos from a phone have not been measured yet.",
+    "វាត្រូវបានបង្ហាត់លើពុម្ពអក្សរនៃការបោះពុម្ពតែមួយ ហើយរៀនពីការវាយអក្សររបស់អ្នកចម្លងម្នាក់ រួមទាំងទម្លាប់ខ្លះរបស់គាត់។ ភាគវិន័យអានបានខ្សោយជាងគេ ហើយរូបថតពីទូរសព្ទមិនទាន់ត្រូវបានវាស់វែងនៅឡើយទេ។"],
+  checkWhat: ["Check what it reads against the print.", "សូមផ្ទៀងផ្ទាត់អ្វីដែលវាអាន ជាមួយសៀវភៅបោះពុម្ព។"],
+  // shown in Khmer only (the drawing's one Khmer line saying the text below stays English)
+  staysEnglish: ["", "សេចក្តីអំពីឯកជនភាព អាជ្ញាប័ណ្ណ និងការទទួលស្គាល់ ខាងក្រោមនេះ នៅជាភាសាអង់គ្លេស រហូតដល់អ្នកអានជនជាតិខ្មែរអនុម័តការបកប្រែ។"],
+  privacyHead: ["Your privacy", "ឯកជនភាពរបស់អ្នក"],
+  twoReaders: ["The two readers", "ម៉ូដែលអានទាំងពីរ"],
+  credits: ["Credits", "ការទទួលស្គាល់"],
+  dhp: ["The gift of the Dhamma surpasses every gift. Dhammapada 354", "ធម្មទាន ឈ្នះទានទាំងពួង។ ធម្មបទ ៣៥៤"],
+  // ── 8 · a word's entry ─────────────────────────────────────────────────────────────────────────────────────────────
+  dictName: ["Samdech Chuon Nath's dictionary", "វចនានុក្រម សម្តេចព្រះសង្ឃរាជ ជួន ណាត"],
+  viaEnding: ["You tapped {tapped}. This is {head}, the same word without its Pāli ending.",
+    "អ្នកបានចុចលើ {tapped}។ នេះគឺ {head} ពាក្យដដែល ដោយគ្មានចុងពាក្យបាលី។"],
+  abbrPali: ["Pāli", "បាលី"],
+  abbrNoun: ["noun", "នាម"],
+  dictNote: ["A Khmer dictionary: it fits Khmer pages, and Pāli words that entered Khmer. When a word has no entry, it says so and never guesses.",
+    "វចនានុក្រមខ្មែរ៖ វាសមនឹងទំព័រខ្មែរ និងពាក្យបាលីដែលចូលមកក្នុងភាសាខ្មែរ។ ពេលពាក្យមួយគ្មានក្នុងវចនានុក្រម វាប្រាប់ដូច្នោះ ហើយមិនទាយឡើយ។"],
+  // NOT DRAWN (the drawings have no no-entry state): built from the drawn note's own words
+  noEntry: ["This word has no entry.", "ពាក្យនេះគ្មានក្នុងវចនានុក្រម។"],
+  close: ["Close", "បិទ"],
+  // ── 9 · a passage selected ─────────────────────────────────────────────────────────────────────────────────────────
+  listen: ["Listen", "ស្តាប់"],
+  askAbout: ["Ask about this", "សួរអំពីនេះ"],
+  khmerVoice: ["Khmer voice", "សំឡេងខ្មែរ"],
+  woman: ["woman", "ស្ត្រី"],
+  man: ["man", "បុរស"],
+  listenNote: ["Listen sends only the words you selected to our voice service, which has Azure's Khmer voices read them aloud. Nothing is sent until you press Listen. Your image and the rest of the text stay on this device.",
+    "ស្តាប់ ផ្ញើតែពាក្យដែលអ្នកបានជ្រើស ទៅសេវាសំឡេងរបស់យើង ដែលឱ្យសំឡេងខ្មែររបស់ Azure អានឮៗ។ គ្មានអ្វីត្រូវបានផ្ញើទេ រហូតដល់អ្នកចុច ស្តាប់។ រូបភាព និងអត្ថបទផ្សេងទៀតរបស់អ្នក នៅលើឧបករណ៍នេះ។"],
+  // ── 10 · ask ───────────────────────────────────────────────────────────────────────────────────────────────────────
+  askTitle: ["Ask about this passage", "សួរអំពីអត្ថបទនេះ"],
+  yourQuestion: ["Your question", "សំណួររបស់អ្នក"],
+  askIn: ["Ask in", "សួរនៅ"],
+  justCopy: ["Just copy it", "ចម្លងប៉ុណ្ណោះ"],
+  justCopySub: ["The passage and your question, ready to paste anywhere", "អត្ថបទ និងសំណួររបស់អ្នក រួចរាល់សម្រាប់បិទភ្ជាប់គ្រប់ទីកន្លែង"],
+  opensNewTab: ["Opens in a new tab", "បើកក្នុងផ្ទាំងថ្មី"],
+  fromSiliconWat: ["From Silicon Wat℠", "ពី Silicon Wat℠"],
+  askCaution: ["AI assistants may assume a different edition's wording. Check what it says against the print.",
+    "ជំនួយការ AI អាចសន្មតយកពាក្យពេចន៍នៃការបោះពុម្ពផ្សេង។ សូមផ្ទៀងផ្ទាត់អ្វីដែលវានិយាយ ជាមួយសៀវភៅបោះពុម្ព។"],
+  ask: ["Ask", "សួរ"],
+  nothingLeaves: ["Nothing leaves this page until you press Ask.", "គ្មានអ្វីចេញពីទំព័រនេះទេ រហូតដល់អ្នកចុច សួរ។"],
+  // ── toasts and problems: NOT DRAWN ─────────────────────────────────────────────────────────────────────────────────
+  copied: ["Copied", "បានចម្លង"],
+  linkCopied: ["Link copied", "បានចម្លងតំណ"],
+  notAFile: ["Choose a photo, a scan or a PDF.", "សូមជ្រើស រូបថត ស្កេន ឬ PDF។"],
+  cannotOpen: ["This file could not be opened.", "មិនអាចបើកឯកសារនេះបានទេ។"],
+  cannotRead: ["The page could not be read. Try again.", "មិនអាចអានទំព័រនេះបានទេ។ សូមសាកល្បងម្តងទៀត។"],
+  cannotCopy: ["Could not copy here.", "មិនអាចចម្លងនៅទីនេះបានទេ។"],
+  didNotWork: ["That did not work. Try again.", "មិនបានសម្រេចទេ។ សូមសាកល្បងម្តងទៀត។"],
+  // the Khmer band (both languages at once, by design)
+  bandEn: ["Khmer: our draft, not yet reviewed", "Khmer: our draft, not yet reviewed"],
+  bandKm: ["ភាសាខ្មែរ៖ សេចក្តីព្រាងរបស់យើង មិនទាន់បានពិនិត្យ", "ភាសាខ្មែរ៖ សេចក្តីព្រាងរបស់យើង មិនទាន់បានពិនិត្យ"],
+} satisfies Record<string, readonly [string, string | null]>;
+
+export type Key = keyof typeof S;
+
+let lang: Lang = typeof document !== "undefined" && document.documentElement.lang === "km" ? "km" : "en";
+const subs = new Set<() => void>();
+
+export const getLang = (): Lang => lang;
+export function setLang(l: Lang) {
+  if (l === lang) return;
+  lang = l;
+  document.documentElement.lang = l;
+  store.set(KEYS.lang, l);
+  subs.forEach((f) => f());
+}
+export function onLang(f: () => void): () => void {
+  subs.add(f);
+  return () => subs.delete(f);
+}
+
+const KM_DIGITS = "០១២៣៤៥៦៧៨៩";
+/** A number in the page's language (Khmer digits in Khmer). */
+export const num = (n: number): string =>
+  lang === "km" ? String(n).replace(/[0-9]/g, (d) => KM_DIGITS[+d]) : String(n);
+/** Reads a number typed in either digit set; NaN if none. */
+export function parseNum(s: string): number {
+  const latin = s.replace(/[០-៩]/g, (d) => String(KM_DIGITS.indexOf(d))).replace(/[^0-9]/g, "");
+  return latin ? parseInt(latin, 10) : NaN;
+}
+
+function fill(s: string, vars?: Record<string, string | number>): string {
+  if (!vars) return s;
+  return s.replace(/\{(\w+)\}/g, (_, k) => {
+    const v = vars[k];
+    return typeof v === "number" ? num(v) : (v ?? "");
+  });
+}
+/** The words for `key` in the page's language (English where the drawings give no Khmer). */
+export function t(key: Key, vars?: Record<string, string | number>): string {
+  const [en, km] = S[key] as readonly [string, string | null];
+  return fill(lang === "km" && km !== null ? km : en, vars);
+}
+/** The language the words for `key` are actually in: "en" where the Khmer is undrawn (so the element can say lang="en"). */
+export function langOf(key: Key): Lang {
+  return lang === "km" && (S[key] as readonly [string, string | null])[1] !== null ? "km" : "en";
+}

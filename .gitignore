@@ -5,3 +5,4 @@ public/models/
 # tesseract.js worker + core and pdf.js, copied from node_modules by scripts/vendor.mjs
 public/vendor/
 .DS_Store
+__pycache__/

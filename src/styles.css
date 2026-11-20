@@ -1,0 +1,469 @@
+/* ocr.siliconwat.dev — the page's one stylesheet.
+ *
+ * Every number here comes from the drawings (demo.siliconwat.dev: board.base.css, brand.py, brand/tokens.css). Tailwind's
+ * own palette and scales are WIPED below (`--x-*: initial`), so a default class such as a grey shade or a named text size
+ * does not exist here and cannot slip in: only the drawing's tokens make utilities. Spacing is one pixel per step
+ * (`--spacing: 1px`), so `p-16` is the drawing's 16px.
+ *
+ * Light DOM throughout (the Lit components render into the page), so these utilities reach every screen.
+ * A Silicon Wat surface: no B-Emblem and no heart. scripts/build-icons.py and scripts/build-og.py read the colors from here.
+ */
+/* The layer order, declared before Tailwind's so that `floor` sits between Tailwind's base (its preflight) and components. */
+@layer theme, base, floor, components, utilities;
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant km (&:lang(km));
+
+@theme {
+  --color-*: initial;
+  --font-*: initial;
+  --font-weight-*: initial;
+  --text-*: initial;
+  --leading-*: initial;
+  --tracking-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --text-shadow-*: initial;
+  --blur-*: initial;
+  --breakpoint-*: initial;
+  --container-*: initial;
+  --animate-*: initial;
+  --ease-*: initial;
+  --perspective-*: initial;
+  --aspect-*: initial;
+
+  --spacing: 1px;
+  /* the drawings' desktop boards (D1, D4) are 1280 wide; the two-column layout starts at 1024 */
+  --breakpoint-desk: 1024px;
+
+  /* fonts (self-hosted from @fontsource, imported in main.ts) */
+  --font-text: "IBM Plex Sans", "Noto Sans Khmer", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --font-khmer: "Noto Sans Khmer", "Khmer Sangam MN", sans-serif;
+  --font-print: "Noto Serif Khmer", "Khmer MN", serif;
+
+  --font-weight-plain: 400;
+  --font-weight-mid: 500;
+  --font-weight-strong: 600;
+  --font-weight-heavy: 700;
+
+  /* sizes, by role, as board.base.css sets them */
+  --text-tiny: 11px;        /* the Khmer band, a license chip */
+  --text-foot: 11.5px;      /* footer, the leaf note */
+  --text-caption: 12px;     /* segments, captions, field labels, page numbers */
+  --text-fine: 12.5px;      /* fine print, section heads */
+  --text-small: 13px;       /* a reader's one-line description */
+  --text-tool: 13.5px;      /* notes, tools, the selection bar */
+  --text-card: 14px;        /* card paragraphs */
+  --text-label: 14.5px;     /* card heads, reader names, a dictionary entry */
+  --text-body: 15px;
+  --text-quote: 15.5px;
+  --text-field: 16px;       /* buttons, the wordmark, every text field (an iPhone zooms anything smaller) */
+  --text-ocr: 17px;         /* the text read; the drop zone's head */
+  --text-pali: 19px;
+  --text-ocr-desk: 20px;
+  --text-h1-km: 22px;
+  --text-h1: 25px;
+  --text-head: 30px;        /* a dictionary headword; a Khmer heading on a computer */
+  --text-h1-desk: 34px;
+
+  --leading-body: 1.5;
+  --leading-km: 1.7;
+  --leading-h1: 1.25;
+  --leading-h1-km: 1.45;
+  --leading-ocr: 2.05;
+  --leading-rom: 1.85;
+  --leading-quote: 1.9;
+  --leading-head: 1.5;
+
+  --tracking-h1: -0.015em;
+  --tracking-wm: -0.01em;
+  --tracking-sh: 0.04em;
+  --tracking-flat: 0;
+
+  --radius-box: 3px;
+  --radius-sel: 4px;
+  --radius-tap: 5px;
+  --radius-icon: 7px;
+  --radius-scan: 8px;
+  --radius-thumb: 10px;
+  --radius-field: 12px;
+  --radius-btn: 14px;
+  --radius-card: 16px;
+  --radius-drop: 20px;
+  --radius-sheet: 22px;
+  --radius-pill: 999px;
+
+  --shadow-scan: 0 2px 10px rgba(0, 0, 0, 0.06);
+  --shadow-sheet: 0 -8px 30px rgba(0, 0, 0, 0.18);
+  --shadow-bar: 0 8px 24px rgba(0, 0, 0, 0.22);
+}
+
+/* The palette's numbers (brand/tokens.css neutrals + brand.py's own block). `static` keeps them all in the output. */
+@theme static {
+  --color-l-bg: #fcfbfe;
+  --color-l-surface: #f4f1fb;
+  --color-l-surface-2: #ebe7f5;
+  --color-l-line: rgba(20, 16, 30, 0.12);
+  --color-l-line-strong: rgba(20, 16, 30, 0.28);
+  --color-l-ink: #16141c;
+  --color-l-ink-dim: #5b5766;
+  --color-l-ink-faint: #8b8796;
+  --color-l-scrim: rgba(20, 16, 30, 0.4);
+
+  --color-d-bg: #0a0a0f;
+  --color-d-surface: #17171d;
+  --color-d-surface-2: #1f1f27;
+  --color-d-line: rgba(255, 255, 255, 0.08);
+  --color-d-line-strong: rgba(255, 255, 255, 0.18);
+  --color-d-ink: #f5f5f7;
+  --color-d-ink-dim: #9b9ba5;
+  --color-d-ink-faint: #6b6b76;
+  --color-d-scrim: rgba(6, 6, 10, 0.72);
+
+  /* Silicon Wat's orange robe — PROVISIONAL (A383), siliconwat.dev's own link orange and its dark twin */
+  --color-accent-light: #c2410c;
+  --color-accent-dark: #fdba74;
+  /* a printed page: paper and ink. A picture of a page, so it does NOT invert in dark mode. */
+  --color-paper: #f3ecdc;
+  --color-print: #2a2420;
+  --color-knob: #ffffff;
+}
+
+/* The roles, which change with the theme. `.dark` on <html> is set by public/boot.js before paint. */
+:root {
+  --bg: var(--color-l-bg);
+  --surface: var(--color-l-surface);
+  --surface-2: var(--color-l-surface-2);
+  --line: var(--color-l-line);
+  --line-strong: var(--color-l-line-strong);
+  --ink: var(--color-l-ink);
+  --ink-dim: var(--color-l-ink-dim);
+  --ink-faint: var(--color-l-ink-faint);
+  --scrim: var(--color-l-scrim);
+  --accent: var(--color-accent-light);
+  --accent-ink: var(--color-knob);
+  --wash: color-mix(in oklab, var(--accent) 9%, transparent);
+  --edge: color-mix(in oklab, var(--accent) 32%, transparent);
+  --hl: color-mix(in oklab, var(--accent) 26%, transparent);
+  /* the outlines drawn on the page image stay the light accent: the page keeps its paper colors */
+  --mark: var(--color-accent-light);
+  --mark-wash: color-mix(in oklab, var(--color-accent-light) 16%, transparent);
+  --mark-faint: color-mix(in oklab, var(--color-print) 35%, transparent);
+  color-scheme: light;
+}
+.dark {
+  --bg: var(--color-d-bg);
+  --surface: var(--color-d-surface);
+  --surface-2: var(--color-d-surface-2);
+  --line: var(--color-d-line);
+  --line-strong: var(--color-d-line-strong);
+  --ink: var(--color-d-ink);
+  --ink-dim: var(--color-d-ink-dim);
+  --ink-faint: var(--color-d-ink-faint);
+  --scrim: var(--color-d-scrim);
+  --accent: var(--color-accent-dark);
+  --accent-ink: var(--color-d-bg);
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-dim: var(--ink-dim);
+  --color-ink-faint: var(--ink-faint);
+  --color-scrim: var(--scrim);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-wash: var(--wash);
+  --color-edge: var(--edge);
+  --color-hl: var(--hl);
+  --color-mark: var(--mark);
+}
+
+@layer base {
+  html,
+  body {
+    background: var(--bg);
+  }
+  body {
+    margin: 0;
+    color: var(--ink);
+    font-family: var(--font-text);
+    font-size: var(--text-body);
+    line-height: var(--leading-body);
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
+  }
+  html:lang(km) body {
+    line-height: var(--leading-km);
+  }
+  b,
+  strong,
+  h1,
+  h2,
+  h3 {
+    font-weight: var(--font-weight-strong);
+  }
+  :where(ocr-app, ocr-empty, ocr-pages, ocr-progress, ocr-result, ocr-outcome, ocr-about, ocr-scan, ocr-dict, ocr-ask) {
+    display: block;
+  }
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--hl);
+  }
+  [hidden] {
+    display: none !important;
+  }
+  button {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: default;
+  }
+}
+
+/* ⛔ Every text field is 16px or larger: an iPhone zooms into a smaller one (/build Default 19). Zero specificity, in its
+   own layer: Tailwind's preflight gives inputs `font: inherit` at specificity (0,0,1) in `base`, which would beat a
+   zero-specificity floor in the same layer (measured: 15px); a later LAYER wins whatever the specificity, and a component
+   or utility that sets a size of its own (always ≥ 16px here) still wins over the floor. */
+@layer floor {
+  :where(input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]), textarea, select) {
+    font-size: 16px;
+  }
+}
+
+@layer components {
+  .h1 {
+    margin: 12px 0 6px;
+    font-size: var(--text-h1);
+    line-height: var(--leading-h1);
+    letter-spacing: var(--tracking-h1);
+    font-weight: var(--font-weight-strong);
+  }
+  .h1:lang(km) {
+    font-size: var(--text-h1-km);
+    line-height: var(--leading-h1-km);
+    letter-spacing: var(--tracking-flat);
+  }
+  @media (width >= 1024px) {
+    .h1 {
+      font-size: var(--text-h1-desk);
+    }
+    .h1:lang(km) {
+      font-size: var(--text-head);
+    }
+  }
+  .lede {
+    @apply mt-0 mb-16 text-ink-dim;
+  }
+  .sh {
+    @apply mt-18 mb-6 text-fine tracking-sh text-ink-dim uppercase;
+  }
+  .sh:lang(km) {
+    @apply text-tool tracking-flat normal-case;
+  }
+  .fine {
+    @apply text-fine text-ink-dim;
+  }
+  .card {
+    @apply mb-12 rounded-card border border-line bg-surface p-16;
+  }
+  .card h2 {
+    @apply mt-0 mb-4 text-label;
+  }
+  .card p {
+    @apply m-0 text-card text-ink-dim;
+  }
+  .card p + p {
+    @apply mt-8;
+  }
+  .note {
+    @apply my-12 rounded-r-field border-l-3 border-accent bg-wash px-14 py-11 text-tool;
+  }
+  .btn {
+    @apply flex w-full items-center justify-center gap-6 rounded-btn border border-accent bg-accent p-14 text-center font-text text-field leading-body font-strong text-accent-ink select-none;
+  }
+  .btn-ghost {
+    @apply border-line-strong bg-transparent text-ink;
+  }
+  .btn:disabled {
+    @apply opacity-88;
+  }
+  .seg {
+    @apply inline-flex rounded-pill border border-line-strong p-2 text-caption whitespace-nowrap;
+  }
+  .seg > button {
+    @apply rounded-pill px-10 py-3 text-ink-dim;
+  }
+  .seg > button[aria-pressed="true"] {
+    @apply bg-ink text-bg;
+  }
+  .tool {
+    @apply inline-flex items-center gap-6 rounded-pill border border-line-strong px-13 py-7 text-tool font-mid whitespace-nowrap;
+  }
+  .lic {
+    @apply rounded-pill border border-line-strong px-8 py-1 font-mono text-tiny font-plain whitespace-nowrap text-ink-dim;
+  }
+  .field {
+    @apply mt-6 block rounded-field border border-line-strong bg-bg px-14 py-10;
+  }
+  .field > span {
+    @apply block text-caption text-ink-dim;
+  }
+  .field input,
+  .field textarea {
+    @apply block w-full resize-none border-0 bg-transparent p-0 text-field text-ink outline-none;
+  }
+  .field:focus-within {
+    @apply border-accent;
+  }
+  /* the text it read: Khmer script set like print */
+  .ocr {
+    @apply mb-10 rounded-card border border-line bg-bg px-14 py-12 font-print text-ocr leading-ocr text-ink;
+  }
+  @media (width >= 1024px) {
+    .ocr {
+      font-size: var(--text-ocr-desk);
+    }
+  }
+  .ocr.rom {
+    @apply font-text text-body leading-rom;
+  }
+  .ocr .ln {
+    @apply block;
+  }
+  .ocr mark {
+    @apply rounded-tap bg-accent px-3 py-1 text-accent-ink;
+  }
+  .sm {
+    font-size: 0.6em;
+    vertical-align: 0.55em;
+    line-height: 0;
+    margin-left: 0.03em;
+  }
+  /* three bouncing dots: a busy button, the reading line. Still under reduced motion (the drawn pose). */
+  .dots {
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+    vertical-align: middle;
+  }
+  .dots > i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: ocr-dot 1.1s ease-in-out infinite;
+  }
+  .dots > i:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+  .dots > i:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+  .btn .dots > i {
+    background: var(--accent-ink);
+  }
+  .btn-ghost .dots > i {
+    background: var(--accent);
+  }
+  @keyframes ocr-dot {
+    0%,
+    55%,
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    25% {
+      transform: translateY(-5px);
+      opacity: 0.8;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dots > i {
+      animation: none;
+    }
+    .dots > i:nth-child(2) {
+      transform: translateY(-4px);
+    }
+    .dots > i:nth-child(3) {
+      opacity: 0.55;
+    }
+  }
+  /* the switch (Show in roman letters) */
+  .tog {
+    @apply relative h-26 w-44 flex-none rounded-pill bg-line-strong;
+  }
+  .tog::after {
+    content: "";
+    @apply absolute top-3 left-3 size-20 rounded-pill bg-knob;
+  }
+  .tog[aria-checked="true"] {
+    @apply bg-accent;
+  }
+  .tog[aria-checked="true"]::after {
+    @apply left-21;
+  }
+  /* spot illustrations */
+  .sf {
+    @apply fill-surface-2 stroke-line-strong;
+  }
+  .ss {
+    @apply fill-none stroke-accent stroke-[2.5];
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .sk {
+    @apply fill-none stroke-line-strong stroke-[2.5];
+    stroke-linecap: round;
+  }
+  .sa {
+    @apply fill-accent;
+  }
+  /* outlines on the page image (SVG, so no inline style is needed: the CSP refuses style attributes) */
+  .box {
+    fill: none;
+    stroke: var(--mark);
+    stroke-width: 1.5px;
+    vector-effect: non-scaling-stroke;
+  }
+  .box.found {
+    stroke-dasharray: 4 3;
+  }
+  .box.now {
+    stroke-width: 2.5px;
+    fill: var(--mark-wash);
+  }
+  .box.faint {
+    stroke: var(--mark-faint);
+    stroke-dasharray: 4 3;
+  }
+  /* bottom sheets (<dialog>) */
+  dialog.sheet {
+    @apply fixed inset-x-0 top-auto bottom-0 m-0 mx-auto max-h-[88dvh] w-full max-w-640 overflow-y-auto rounded-t-sheet border-0 bg-bg px-20 pt-10 pb-24 text-ink shadow-sheet;
+  }
+  /* the sheet itself takes focus when it opens (autofocus), so no control is ringed before the person moves */
+  dialog.sheet:focus {
+    outline: none;
+  }
+  dialog.sheet::backdrop {
+    background: transparent;
+  }
+  dialog.sheet.scrim::backdrop {
+    background: var(--scrim);
+  }
+  .grab {
+    @apply mx-auto mb-10 block h-5 w-40 rounded-box bg-line-strong;
+  }
+}

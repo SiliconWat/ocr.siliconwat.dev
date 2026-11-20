@@ -30,6 +30,7 @@ export const fakeReader: Reader = {
   },
   async read(_page, opts, hooks, signal): Promise<ReadResult> {
     const boxes = PALI.map((_, i) => [140, 270 + i * 128, 1500, 330 + i * 128] as [number, number, number, number]);
+    hooks?.onLeaf?.(opts.leaf ?? "pali");
     hooks?.onFound?.(boxes);
     const lines: Line[] = [];
     for (let i = 0; i < PALI.length; i++) {

@@ -27,6 +27,7 @@ export interface PdfDoc {
 export interface Line { box: [number, number, number, number]; text: string; confidence: number }
 
 export interface ReadHooks {
+  onLeaf?(leaf: Leaf): void;                                    // the leaf, once decided (before onFound)
   onFound?(boxes: [number, number, number, number][]): void;   // the lines found, before any is read (outline them)
   onLine?(index: number, line: Line): void;                     // each line as it is read (the text grows)
 }

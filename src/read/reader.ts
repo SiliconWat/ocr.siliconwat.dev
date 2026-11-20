@@ -131,6 +131,7 @@ export const reader: Reader = {
       for (const i of pick) { aborted(signal); const l = await readBox(f, px, boxes[i]); probe.push(l); seen.set(f + boxes[i].join(), l); }
       leaf = detectLeaf(probe.map((l) => l.text).join(" "));
     }
+    hooks?.onLeaf?.(leaf);
     const bands = leaf === "khmer" ? textLines(px.line, { splitTall: true }) : plain;   // Khmer: touching lines are split
     const boxes = boxesOf(bands), file = fileFor(opts.model, leaf);
     hooks?.onFound?.(boxes);
