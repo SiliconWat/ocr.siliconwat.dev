@@ -10,12 +10,10 @@ import { fromRGBA, resize, toPGM, type Gray } from "./gray";
 import { textLines } from "./lines";
 import { lineBox, crop } from "./crop";
 import { detectLeaf } from "./leaf";
-import { skewAngle, rotate, MIN_DEG } from "./deskew";
+import { preparePage } from "./page";
 import { fileFor, MODELS } from "./models";
 
 const abs = (p: string) => new URL(import.meta.env.BASE_URL + p, location.href).href;
-/** The app images the line finder was measured on are 1,332–1,380 px tall; an image of any size is brought to this. */
-const LINE_LONG_SIDE = 1340;
 /** A crop copy larger than this gains nothing (Tesseract scales each line to its own height) and costs a phone memory. */
 const MAX_LONG_SIDE = 3400;
 /** ⏳ PROVISIONAL — to calibrate before launch on the test pages and on pages of other prints: a page whose lines' median
@@ -32,10 +30,6 @@ function grayOf(src: CanvasImageSource, w: number, h: number): Gray {
   return fromRGBA(g.getImageData(0, 0, w, h).data, w, h);
 }
 
-const lineOf = (g: Gray, exactHalf: boolean) => exactHalf
-  ? resize(g, Math.round(g.w / 2), Math.round(g.h / 2))   // a 300-dpi render → 150 dpi, as pilot 3
-  : (() => { const s = LINE_LONG_SIDE / Math.max(g.w, g.h); return resize(g, Math.round(g.w * s), Math.round(g.h * s)); })();
-
 async function grayURL(g: Gray): Promise<string> {
   const c = document.createElement("canvas"); c.width = g.w; c.height = g.h;
   const x = c.getContext("2d")!, im = x.createImageData(g.w, g.h);
@@ -45,17 +39,13 @@ async function grayURL(g: Gray): Promise<string> {
   return URL.createObjectURL(b);
 }
 
-/** A page tilted by 1° or more is straightened first (src/read/deskew.ts); the picture shown is then the straightened one, so
+/** The page is prepared by page.ts (straightened if 1° or more off level); the picture shown is then the straightened one, so
  *  the outlines of the lines found sit on it. A level page (every scan pilot 3 measured) goes through untouched. */
-async function makePage(cropGray: Gray, preview: string, pw: number, ph: number, exactHalf: boolean): Promise<Page> {
-  let g = cropGray, line = lineOf(g, exactHalf);
-  const tilt = skewAngle(line);
-  if (Math.abs(tilt) >= MIN_DEG) {
-    g = rotate(g, tilt); line = lineOf(g, exactHalf);
-    URL.revokeObjectURL(preview); preview = await grayURL(g); pw = g.w; ph = g.h;
-  }
-  const page: Page = { preview, width: pw, height: ph, scale: pw / g.w };
-  pixels.set(page, { crop: g, line });
+async function makePage(cropGray: Gray, preview: string, pw: number, ph: number, exactHalf: boolean, line150?: Gray): Promise<Page> {
+  const p = preparePage(cropGray, exactHalf, line150);
+  if (p.turned) { URL.revokeObjectURL(preview); preview = await grayURL(p.crop); pw = p.crop.w; ph = p.crop.h; }
+  const page: Page = { preview, width: pw, height: ph, scale: pw / p.crop.w };
+  pixels.set(page, { crop: p.crop, line: p.line });
   return page;
 }
 
@@ -125,9 +115,11 @@ export const reader: Reader = {
       pages: doc.numPages,
       async thumbnail(n, width) { return urlOf(await render(n, (w1) => width / w1)); },
       async page(n) {
-        const c = await render(n, () => 300 / 72);   // 300 dpi, the size pilot 3 cropped from
+        // two renders, as pilot 3 measured: lines found on a 150-dpi render, read from a 300-dpi one (page.ts says why)
+        const c150 = await render(n, () => 150 / 72), l150 = grayOf(c150, c150.width, c150.height);
+        const c = await render(n, () => 300 / 72);
         const g = grayOf(c, c.width, c.height);
-        return await makePage(g, await urlOf(c), c.width, c.height, true);
+        return await makePage(g, await urlOf(c), c.width, c.height, true, l150);
       },
       close() { urls.forEach(URL.revokeObjectURL); task.destroy(); },
     };
