@@ -10,6 +10,7 @@ import { fromRGBA, resize, toPGM, type Gray } from "./gray";
 import { textLines } from "./lines";
 import { lineBox, crop } from "./crop";
 import { detectLeaf } from "./leaf";
+import { skewAngle, rotate, MIN_DEG } from "./deskew";
 import { fileFor, MODELS } from "./models";
 
 const abs = (p: string) => new URL(import.meta.env.BASE_URL + p, location.href).href;
@@ -31,12 +32,30 @@ function grayOf(src: CanvasImageSource, w: number, h: number): Gray {
   return fromRGBA(g.getImageData(0, 0, w, h).data, w, h);
 }
 
-function makePage(cropGray: Gray, preview: string, pw: number, ph: number, exactHalf: boolean): Page {
-  const line = exactHalf
-    ? resize(cropGray, Math.round(cropGray.w / 2), Math.round(cropGray.h / 2))   // a 300-dpi render → 150 dpi, as pilot 3
-    : (() => { const s = LINE_LONG_SIDE / Math.max(cropGray.w, cropGray.h); return resize(cropGray, Math.round(cropGray.w * s), Math.round(cropGray.h * s)); })();
-  const page: Page = { preview, width: pw, height: ph, scale: pw / cropGray.w };
-  pixels.set(page, { crop: cropGray, line });
+const lineOf = (g: Gray, exactHalf: boolean) => exactHalf
+  ? resize(g, Math.round(g.w / 2), Math.round(g.h / 2))   // a 300-dpi render → 150 dpi, as pilot 3
+  : (() => { const s = LINE_LONG_SIDE / Math.max(g.w, g.h); return resize(g, Math.round(g.w * s), Math.round(g.h * s)); })();
+
+async function grayURL(g: Gray): Promise<string> {
+  const c = document.createElement("canvas"); c.width = g.w; c.height = g.h;
+  const x = c.getContext("2d")!, im = x.createImageData(g.w, g.h);
+  for (let i = 0, j = 0; i < g.data.length; i++, j += 4) { im.data[j] = im.data[j + 1] = im.data[j + 2] = g.data[i]; im.data[j + 3] = 255; }
+  x.putImageData(im, 0, 0);
+  const b = await new Promise<Blob>((ok, no) => c.toBlob((v) => (v ? ok(v) : no(new Error("toBlob"))), "image/jpeg", 0.85));
+  return URL.createObjectURL(b);
+}
+
+/** A page tilted by 1° or more is straightened first (src/read/deskew.ts); the picture shown is then the straightened one, so
+ *  the outlines of the lines found sit on it. A level page (every scan pilot 3 measured) goes through untouched. */
+async function makePage(cropGray: Gray, preview: string, pw: number, ph: number, exactHalf: boolean): Promise<Page> {
+  let g = cropGray, line = lineOf(g, exactHalf);
+  const tilt = skewAngle(line);
+  if (Math.abs(tilt) >= MIN_DEG) {
+    g = rotate(g, tilt); line = lineOf(g, exactHalf);
+    URL.revokeObjectURL(preview); preview = await grayURL(g); pw = g.w; ph = g.h;
+  }
+  const page: Page = { preview, width: pw, height: ph, scale: pw / g.w };
+  pixels.set(page, { crop: g, line });
   return page;
 }
 
@@ -78,7 +97,7 @@ export const reader: Reader = {
     const s = Math.min(1, MAX_LONG_SIDE / Math.max(bmp.width, bmp.height));
     const w = Math.round(bmp.width * s), h = Math.round(bmp.height * s);
     const g = grayOf(bmp, w, h); bmp.close();
-    return makePage(g, URL.createObjectURL(blob), w, h, false);
+    return await makePage(g, URL.createObjectURL(blob), w, h, false);
   },
 
   async openPdf(blob): Promise<PdfDoc> {
@@ -108,7 +127,7 @@ export const reader: Reader = {
       async page(n) {
         const c = await render(n, () => 300 / 72);   // 300 dpi, the size pilot 3 cropped from
         const g = grayOf(c, c.width, c.height);
-        return makePage(g, await urlOf(c), c.width, c.height, true);
+        return await makePage(g, await urlOf(c), c.width, c.height, true);
       },
       close() { urls.forEach(URL.revokeObjectURL); task.destroy(); },
     };
