@@ -12,3 +12,5 @@ import "@fontsource/noto-serif-khmer/400.css";
 import "@fontsource/noto-serif-khmer/500.css";
 import "./styles.css";
 import "./ui/app";
+import { watchUncaught } from "./report";
+watchUncaught();

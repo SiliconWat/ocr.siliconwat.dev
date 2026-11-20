@@ -10,6 +10,7 @@ import { copyText, downloadText, toast } from "./toast";
 import { demoParam, DEMO } from "./prefs";
 import { toRoman, type Leaf } from "../read/index";
 import { available, speak, type Voice } from "../listen";
+import { reportError } from "../report";
 import "./scan";
 
 export interface Tap { run: number; line: number; start: number; end: number }
@@ -181,7 +182,7 @@ export class OcrResult extends Light {
       this.speaking = "playing";
       await a.play();
     } catch (e) {
-      if ((e as DOMException)?.name !== "AbortError") toast(t("didNotWork"), true);
+      if ((e as DOMException)?.name !== "AbortError") { reportError("listen", e); toast(t("didNotWork"), true); }
       this.stopVoice();
     }
   }

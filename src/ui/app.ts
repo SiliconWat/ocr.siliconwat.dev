@@ -8,6 +8,7 @@ import { Light } from "./base";
 import { t, getLang, setLang, type Lang } from "../i18n";
 import { SHARE, siteIcon } from "./icons";
 import { copyText, mountToast, toast } from "./toast";
+import { reportError } from "../report";
 import { modelChoice, setModel, setTheme, themeChoice, DEMO, demoParam, type ThemeChoice } from "./prefs";
 import { newRun, readLines, textLang, type Run } from "./run";
 import type { Tap } from "./result";
@@ -140,7 +141,8 @@ export class OcrApp extends Light {
         this.runs = [newRun(null, async () => page, page)];
         await this.readRuns([0]);
       }
-    } catch {
+    } catch (e) {
+      reportError("open", e);
       if (session !== this.session) return;
       this.opening = false;
       this.view = "empty";
@@ -220,9 +222,9 @@ export class OcrApp extends Light {
         return;
       }
       this.opening = false;
+      reportError("read", e);
       toast(t("cannotRead"), true);
       this.finish(true);
-      void e;
     }
   }
 
