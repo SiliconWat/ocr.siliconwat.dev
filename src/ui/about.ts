@@ -15,7 +15,7 @@ const LICENSES =
   "Most accurate: Apache-2.0. Public domain: CC0. The license matters only if you share a model file itself. " +
   "The training data is not released.";
 const CREDITS: [string, string][] = [
-  ["Transcription", "[ the transcriber's name — to come ]"],
+  ["Transcription", "Se Mong Ly (សេ ម៉ុងលី)"],
   ["Text", "the Buddhist Institute edition of the Tipiṭaka (Phnom Penh, 1927–69)"],
   ["Scans", "Upāsikā Kang Huychan and family · Lok Kru Aggapaṇḍita But Savong · Srong Chanda · 5000-years.org, given as dhamma dāna"],
   ["Made by", "Silicon Wat℠, with Miss Aquarius℠ (AI collaboration, disclosed)"],
