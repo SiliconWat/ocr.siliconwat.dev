@@ -15,6 +15,8 @@ const S = {
   // ── header, footer, band ───────────────────────────────────────────────────────────────────────────────────────────
   share: ["Share", "ចែករំលែក"],
   aboutLink: ["About and credits", "អំពី និងការទទួលស្គាល់"],
+  // NOT DRAWN (legal D9, 2026-11-20): our words, our Khmer draft; the page itself stays English
+  termsLink: ["Privacy and terms", "ឯកជនភាព និងលក្ខខណ្ឌ"],
   visits: ["Visits are counted without cookies.", "ការចូលមើលត្រូវបានរាប់ដោយគ្មានខូគី។"],
   system: ["System", "ប្រព័ន្ធ"],
   light: ["Light", "ភ្លឺ"],
@@ -111,8 +113,10 @@ const S = {
   whatReadsLong: ["Pāli and Khmer printed in Khmer script: both pages of each opening of the Buddhist Institute edition of the Tipiṭaka (Phnom Penh, 1927–69). It tells which one a page is, and you can switch it.",
     "បាលី និងខ្មែរ ដែលបោះពុម្ពជាអក្សរខ្មែរ៖ ទំព័រទាំងពីរនៃការបើកនីមួយៗ នៃព្រះត្រៃបិដកបោះពុម្ពរបស់ពុទ្ធសាសនបណ្ឌិត្យ (ភ្នំពេញ ១៩២៧–១៩៦៩)។ វាដឹងថាទំព័រនីមួយៗជាភាសាណា ហើយអ្នកអាចប្តូរវាបាន។"],
   howWell: ["How well it reads", "វាអានបានល្អប៉ុណ្ណា"],
-  howWell1: ["On Pāli pages the models never saw, Most accurate got 1.5% of characters wrong, and Public domain 2.3%. Khmer pages: [ figure to come ].",
-    "លើទំព័របាលីដែលម៉ូដែលមិនធ្លាប់ឃើញ ត្រឹមត្រូវបំផុត ខុស ១,៥% នៃតួអក្សរ ហើយ កម្មសិទ្ធិសាធារណៈ ខុស ២,៣%។ ទំព័រខ្មែរ៖ [ តួលេខនឹងមកដល់ ]។"],
+  // updated 2026-11-20 from the drawings' S7 to the measured figures (OCR pilot 4's readers, read in Chrome from PDFs of the
+  // edition, 80 + 80 test pages never used in training; scratchpad e2e, recorded in the spec); our Khmer, a draft
+  howWell1: ["On pages the models never saw, read here from PDFs of the edition, Most accurate got 1.6% of characters wrong on Pāli pages and 1.2% on Khmer pages; Public domain 2.1% and 2.2%.",
+    "លើទំព័រដែលម៉ូដែលមិនធ្លាប់ឃើញ (អានពី PDF នៃការបោះពុម្ព) ត្រឹមត្រូវបំផុត ខុស ១,៦% នៃតួអក្សរ លើទំព័របាលី និង ១,២% លើទំព័រខ្មែរ ហើយ កម្មសិទ្ធិសាធារណៈ ខុស ២,១% និង ២,២%។"],
   howWell2: ["It was trained on one edition's typeface and learned from one transcriber's typing, including some of their habits. The Vinaya volumes read least well, and photos from a phone have not been measured yet.",
     "វាត្រូវបានបង្ហាត់លើពុម្ពអក្សរនៃការបោះពុម្ពតែមួយ ហើយរៀនពីការវាយអក្សររបស់អ្នកចម្លងម្នាក់ រួមទាំងទម្លាប់ខ្លះរបស់គាត់។ ភាគវិន័យអានបានខ្សោយជាងគេ ហើយរូបថតពីទូរសព្ទមិនទាន់ត្រូវបានវាស់វែងនៅឡើយទេ។"],
   checkWhat: ["Check what it reads against the print.", "សូមផ្ទៀងផ្ទាត់អ្វីដែលវាអាន ជាមួយសៀវភៅបោះពុម្ព។"],

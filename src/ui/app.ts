@@ -22,6 +22,7 @@ import "./result";
 import "./outcome";
 import "./sheets";
 import "./about";
+import "./terms";
 
 type View = "empty" | "pages" | "ready" | "reading" | "result" | "nothing" | "other";
 
@@ -32,6 +33,7 @@ export class OcrApp extends Light {
   static properties = {
     view: { state: true },
     about: { state: true },
+    terms: { state: true },
     model: { state: true },
     opening: { state: true },
     rev: { state: true },
@@ -41,6 +43,7 @@ export class OcrApp extends Light {
   };
   declare view: View;
   declare about: boolean;
+  declare terms: boolean;
   declare model: ModelId;
   declare opening: boolean;
   declare rev: number;
@@ -64,6 +67,7 @@ export class OcrApp extends Light {
     super();
     this.view = "empty";
     this.about = location.hash === "#about";
+    this.terms = location.hash === "#terms";
     this.model = modelChoice();
     this.opening = false;
     this.rev = 0;
@@ -84,6 +88,7 @@ export class OcrApp extends Light {
   }
   private onHash = () => {
     this.about = location.hash === "#about";
+    this.terms = location.hash === "#terms";
   };
 
   firstUpdated() {
@@ -92,10 +97,10 @@ export class OcrApp extends Light {
   }
 
   protected updated(changed: PropertyValues) {
-    if (changed.has("view") || changed.has("about")) {
+    if (changed.has("view") || changed.has("about") || changed.has("terms")) {
       window.scrollTo(0, 0);
       // move focus to the new screen's heading, for a screen reader (not on the first paint)
-      if (changed.get("view") !== undefined || changed.get("about") !== undefined) {
+      if (changed.get("view") !== undefined || changed.get("about") !== undefined || changed.get("terms") !== undefined) {
         this.querySelector<HTMLElement>("main h1")?.focus({ preventScroll: true });
       }
     }
@@ -313,6 +318,7 @@ export class OcrApp extends Light {
     e.preventDefault();
     if (location.hash) history.pushState(null, "", location.pathname + location.search);
     this.about = false;
+    this.terms = false;
     this.again();
   }
   private theme(c: ThemeChoice) {
@@ -342,12 +348,13 @@ export class OcrApp extends Light {
     const b = (v: ThemeChoice, k: "system" | "light" | "dark") =>
       html`<button aria-pressed=${c === v ? "true" : "false"} @click=${() => this.theme(v)}>${t(k)}</button>`;
     return html`<footer class="mt-20 flex flex-wrap items-center justify-between gap-10 border-t border-line pt-12 pb-24 text-foot text-ink-faint">
-      <span><a href="#about" class="text-ink-dim underline underline-offset-2">${t("aboutLink")}</a> · ${t("visits")}</span>
+      <span><a href="#about" class="text-ink-dim underline underline-offset-2">${t("aboutLink")}</a> · <a href="#terms" class="text-ink-dim underline underline-offset-2">${t("termsLink")}</a> · ${t("visits")}</span>
       <div class="seg" role="group">${b("system", "system")}${b("light", "light")}${b("dark", "dark")}</div>
     </footer>`;
   }
 
   private main() {
+    if (this.terms) return html`<ocr-terms></ocr-terms>`;
     if (this.about) return html`<ocr-about></ocr-about>`;
     switch (this.view) {
       case "empty":

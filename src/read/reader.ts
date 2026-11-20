@@ -16,9 +16,13 @@ import { fileFor, MODELS } from "./models";
 const abs = (p: string) => new URL(import.meta.env.BASE_URL + p, location.href).href;
 /** A crop copy larger than this gains nothing (Tesseract scales each line to its own height) and costs a phone memory. */
 const MAX_LONG_SIDE = 3400;
-/** ⏳ PROVISIONAL — to calibrate before launch on the test pages and on pages of other prints: a page whose lines' median
- *  confidence falls below this is "not this print" (state 6). */
-const NOT_THIS_PRINT = 40;
+/** "Not this print" (state 6): a FORECAST OF A BAD READ, never a test of provenance — a page whose lines' median confidence is
+ *  below this. Calibrated 2026-11-20 on pilot 4's readers (scripts/confidence.ts): the 160 edition test pages score ≥ 55 except
+ *  pages that truly read badly (25/214 at 31–38, 33% wrong; flagged, rightly); blurred, sideways, upside-down, noise and English
+ *  pages score ≤ 15. At 50: A misses only a mildly blurred page (66, 13% wrong); another Khmer typeface passes on A (62, 3%
+ *  wrong) and is flagged on B (21, 23% wrong). ⚠️ A faded, low-contrast page finds NO lines (state 5): the line finder's fixed
+ *  darkness cutoff — owed for photos. */
+const NOT_THIS_PRINT = 50;
 
 interface Pixels { crop: Gray; line: Gray }
 const pixels = new WeakMap<Page, Pixels>();

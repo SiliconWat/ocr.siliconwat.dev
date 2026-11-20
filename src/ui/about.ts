@@ -13,7 +13,7 @@ const PRIVACY =
   "you ask about (to the assistant you chose). Visits are counted without cookies, and the count never sees an image or a word.";
 const LICENSES =
   "Most accurate: Apache-2.0. Public domain: CC0. The license matters only if you share a model file itself. " +
-  "The training data is not released.";
+  "The page images used in training are not released; the transcriber's typed text is published as a dataset (CC0), crediting the Buddhist Institute.";
 const CREDITS: [string, string][] = [
   ["Transcription", "Se Mong Ly (សេ ម៉ុងលី)"],
   ["Text", "the Buddhist Institute edition of the Tipiṭaka (Phnom Penh, 1927–69)"],

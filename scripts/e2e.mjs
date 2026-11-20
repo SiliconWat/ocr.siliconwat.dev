@@ -11,8 +11,9 @@ import { join, resolve } from "node:path";
 const args = process.argv.slice(2);
 const out = args[args.indexOf("--out") + 1];
 const listen = args.includes("--listen");
+const model = args.includes("--model") ? args[args.indexOf("--model") + 1] : null;   // accurate | public (the reader picker's stored choice)
 const range = args.includes("--range") ? args[args.indexOf("--range") + 1].split("-").map(Number) : null;   // a PDF: read pages a–b
-const files = args.filter((a, i) => a !== "--out" && a !== "--listen" && a !== "--range" && args[i - 1] !== "--out" && args[i - 1] !== "--range").map((f) => resolve(f));
+const files = args.filter((a, i) => a !== "--out" && a !== "--listen" && a !== "--range" && a !== "--model" && args[i - 1] !== "--out" && args[i - 1] !== "--range" && args[i - 1] !== "--model").map((f) => resolve(f));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const server = spawn("nice", ["-n", "10", "npx", "vite", "preview", "--port", "4318", "--strictPort"], { stdio: "ignore" });
 const prof = mkdtempSync(join(tmpdir(), "ocr-e2e-"));
@@ -47,6 +48,11 @@ try {
     });
     await send("Runtime.enable", {}, s); await send("Performance.enable", {}, s); await send("Log.enable", {}, s); await send("Page.enable", {}, s); await send("DOM.enable", {}, s);
     await send("Page.navigate", { url: "http://localhost:4318/" }, s);
+    if (model) {   // the reader picker's stored choice (src/ui/prefs.ts KEYS.model), then a fresh load so the page reads it
+      for (let i = 0; i < 40 && !(await evalIn(s, "document.readyState === 'complete'")); i++) await sleep(250);
+      await evalIn(s, `localStorage.setItem("ocr-reader", ${JSON.stringify(model)})`);
+      await send("Page.navigate", { url: "http://localhost:4318/" }, s);
+    }
     for (let i = 0; i < 40 && !(await evalIn(s, "!!document.querySelector('#pick-file')")); i++) await sleep(250);
     const { root } = await send("DOM.getDocument", {}, s);
     const { nodeId } = await send("DOM.querySelector", { nodeId: root.nodeId, selector: "#pick-file" }, s);
