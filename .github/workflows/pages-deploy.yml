@@ -1,0 +1,81 @@
+name: Deploy to GitHub Pages
+
+# Builds the site and deploys it to GitHub Pages. Adapted from brand.333.eco's workflow (its CNAME and re-run lessons kept).
+#
+# ⏳ BEFORE LAUNCH IT RUNS ONLY BY HAND (workflow_dispatch): the repo is private until launch, a private repo pays for Actions
+# minutes, and Pages cannot publish from it on this plan. AT LAUNCH (A64, the same day the Hugging Face models go public):
+#   1. commit the released models into public/models/ (drop that line from .gitignore) and mark none interim in
+#      src/read/models.ts — `npm run build` runs scripts/check-models.mjs and REFUSES otherwise;
+#   2. make the repo public; Settings → Pages → Source → "GitHub Actions";
+#   3. add `push: branches: [main]` below; DNS: `ocr` CNAME → siliconwat.github.io (DNS only), on the founder's word.
+#
+# ⚠️ CNAME lives in public/, so the build copies it into dist/. A CNAME outside the uploaded artifact is silently ignored and
+# the custom domain unmaps on the next deploy: a working build and a dead domain, nothing in the log. The step below asserts it.
+# Re-run safety: a stale "github-pages" artifact is deleted first, so a re-run never aborts on two.
+
+on:
+    workflow_dispatch:
+
+permissions:
+    contents: read
+    pages: write
+    id-token: write
+    actions: write # delete stale github-pages artifacts so re-runs stay safe
+
+concurrency:
+    group: pages
+    cancel-in-progress: false
+
+jobs:
+    deploy:
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6
+
+            - name: Setup Node
+              uses: actions/setup-node@v6
+              with:
+                  node-version: 22
+
+            # npm run build = vendor (tesseract.js + pdf.js copied in) → check-models (refuses an interim or missing model)
+            # → tsc → vite build
+            - name: Build
+              run: npm ci && npm run build
+
+            - name: Test
+              run: npm test
+
+            - name: Assert CNAME and the models survived the build
+              run: |
+                  test -f dist/CNAME || { echo "::error::dist/CNAME is missing — the custom domain will unmap."; exit 1; }
+                  ls dist/models/*.traineddata >/dev/null 2>&1 || { echo "::error::no model in dist/models — the page could read nothing."; exit 1; }
+
+            - name: Setup Pages
+              uses: actions/configure-pages@v6
+
+            - name: Clear stale Pages artifact (safe re-runs)
+              uses: actions/github-script@v8
+              with:
+                  script: |
+                      const { data } = await github.rest.actions.listWorkflowRunArtifacts({
+                        owner: context.repo.owner, repo: context.repo.repo, run_id: context.runId,
+                      });
+                      for (const artifact of data.artifacts) {
+                        if (artifact.name === 'github-pages') {
+                          core.info(`Deleting stale artifact ${artifact.id}`);
+                          await github.rest.actions.deleteArtifact({ owner: context.repo.owner, repo: context.repo.repo, artifact_id: artifact.id });
+                        }
+                      }
+
+            - name: Upload artifact
+              uses: actions/upload-pages-artifact@v5
+              with:
+                  path: dist
+
+            - name: Deploy
+              id: deployment
+              uses: actions/deploy-pages@v5
