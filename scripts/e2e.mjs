@@ -10,12 +10,13 @@ import { join, resolve } from "node:path";
 
 const args = process.argv.slice(2);
 const out = args[args.indexOf("--out") + 1];
-const files = args.filter((a, i) => a !== "--out" && args[i - 1] !== "--out").map((f) => resolve(f));
+const listen = args.includes("--listen");
+const files = args.filter((a, i) => a !== "--out" && a !== "--listen" && args[i - 1] !== "--out").map((f) => resolve(f));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const server = spawn("nice", ["-n", "10", "npx", "vite", "preview", "--port", "4318", "--strictPort"], { stdio: "ignore" });
 const prof = mkdtempSync(join(tmpdir(), "ocr-e2e-"));
 const chrome = spawn("nice", ["-n", "10", "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "--headless=new",
-  "--disable-gpu", "--remote-debugging-port=0", `--user-data-dir=${prof}`, "--no-first-run", "--lang=en-US", "about:blank"], { stdio: ["ignore", "ignore", "pipe"] });
+  "--disable-gpu", "--remote-debugging-port=0", `--user-data-dir=${prof}`, "--no-first-run", "--lang=en-US", "--autoplay-policy=no-user-gesture-required", "about:blank"], { stdio: ["ignore", "ignore", "pipe"] });
 const wsUrl = await new Promise((ok, no) => {
   let buf = ""; chrome.stderr.on("data", (d) => { buf += d; const m = buf.match(/DevTools listening on (ws:\/\/\S+)/); if (m) ok(m[1]); });
   setTimeout(() => no(new Error("Chrome gave no DevTools address")), 20000);
@@ -57,7 +58,25 @@ try {
     }
     const page = await evalIn(s, `({ lines: [...document.querySelectorAll('[data-line]')].map(e => e.textContent),
       leaf: document.querySelector('[role=group][aria-label="This page is in"] [aria-pressed=true]')?.textContent?.trim(), h1: document.querySelector('h1')?.textContent?.trim() })`);
-    results.push({ file: f, seconds: (Date.now() - t0) / 1000, finished: done, ...page, problems });
+    let heard = null;
+    if (listen && done) {   // select line 2, press Listen with a real click, and wait for the voice to play
+      const tts = [];
+      await send("Network.enable", {}, s);
+      listeners.push((m) => { if (m.sessionId === s && m.method === "Network.responseReceived" && m.params.response.url.startsWith("https://tts.siliconwat.dev/")) tts.push(m.params.response.status); });
+      await evalIn(s, `(() => { const el = document.querySelector('[data-line="2"]'); const r = document.createRange(); r.selectNodeContents(el);
+        const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); document.dispatchEvent(new Event('selectionchange')); })()`);
+      await sleep(800);
+      const at = await evalIn(s, `(() => { const b = [...document.querySelectorAll('button')].find(b => /^\\s*Listen\\s*$/.test(b.textContent)); if (!b) return null;
+        const r = b.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 }; })()`);
+      if (at) {
+        for (const type of ["mousePressed", "mouseReleased"]) await send("Input.dispatchMouseEvent", { type, x: at.x, y: at.y, button: "left", clickCount: 1 }, s);
+        let playing = false;
+        for (let i = 0; i < 30 && !playing; i++) { await sleep(500); playing = await evalIn(s, "[...document.querySelectorAll('button')].some(b => /^\\s*Stop\\s*$/.test(b.textContent))"); }
+        heard = { button: true, playing, ttsStatus: tts };
+      } else heard = { button: false };
+      console.log(`  listen: ${JSON.stringify(heard)}`);
+    }
+    results.push({ file: f, seconds: (Date.now() - t0) / 1000, finished: done, ...page, problems, heard });
     console.log(`${f.split("/").pop()}: ${done ? "read" : "TIMED OUT"} in ${((Date.now() - t0) / 1000).toFixed(0)} s · ${page.lines.length} lines · leaf ${page.leaf} · ${problems.length} console/CSP problems`);
     await send("Target.closeTarget", { targetId });
   }

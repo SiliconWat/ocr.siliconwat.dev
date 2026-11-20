@@ -159,6 +159,8 @@ export class OcrResult extends Light {
     if (this.speaking) { this.stopVoice(); return; }
     const text = this.sel;
     if (!text) return;
+    // the voice service takes up to 600 characters (tts.siliconwat.dev); say so plainly, with no count (Sig-8)
+    if ([...text].length > 600) { toast(t("tooLong")); return; }
     this.speaking = "busy";
     const ac = new AbortController();
     this.listenAbort = ac;

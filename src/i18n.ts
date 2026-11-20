@@ -163,6 +163,7 @@ const S = {
   cannotOpen: ["This file could not be opened.", "មិនអាចបើកឯកសារនេះបានទេ។"],
   cannotRead: ["The page could not be read. Try again.", "មិនអាចអានទំព័រនេះបានទេ។ សូមសាកល្បងម្តងទៀត។"],
   cannotCopy: ["Could not copy here.", "មិនអាចចម្លងនៅទីនេះបានទេ។"],
+  tooLong: ["Select a shorter passage to hear it.", "សូមជ្រើសអត្ថបទខ្លីជាងនេះ ដើម្បីស្តាប់។"],
   didNotWork: ["That did not work. Try again.", "មិនបានសម្រេចទេ។ សូមសាកល្បងម្តងទៀត។"],
   // the Khmer band (both languages at once, by design)
   bandEn: ["Khmer: our draft, not yet reviewed", "Khmer: our draft, not yet reviewed"],
