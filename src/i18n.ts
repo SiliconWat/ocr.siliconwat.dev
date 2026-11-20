@@ -148,6 +148,8 @@ const S = {
   justCopy: ["Just copy it", "ចម្លងប៉ុណ្ណោះ"],
   justCopySub: ["The passage and your question, ready to paste anywhere", "អត្ថបទ និងសំណួររបស់អ្នក រួចរាល់សម្រាប់បិទភ្ជាប់គ្រប់ទីកន្លែង"],
   opensNewTab: ["Opens in a new tab", "បើកក្នុងផ្ទាំងថ្មី"],
+  // NOT DRAWN (bedok.siliconwat.org's way: copy, then open): our words, our Khmer draft
+  copyThenOpen: ["Ask copies the passage and your question, then opens the assistant. Paste them there.", "សួរ ចម្លងអត្ថបទ និងសំណួររបស់អ្នក រួចបើកជំនួយការ។ សូមបិទភ្ជាប់នៅទីនោះ។"],
   fromSiliconWat: ["From Silicon Wat℠", "ពី Silicon Wat℠"],
   askCaution: ["AI assistants may assume a different edition's wording. Check what it says against the print.",
     "ជំនួយការ AI អាចសន្មតយកពាក្យពេចន៍នៃការបោះពុម្ពផ្សេង។ សូមផ្ទៀងផ្ទាត់អ្វីដែលវានិយាយ ជាមួយសៀវភៅបោះពុម្ព។"],
@@ -155,6 +157,7 @@ const S = {
   nothingLeaves: ["Nothing leaves this page until you press Ask.", "គ្មានអ្វីចេញពីទំព័រនេះទេ រហូតដល់អ្នកចុច សួរ។"],
   // ── toasts and problems: NOT DRAWN ─────────────────────────────────────────────────────────────────────────────────
   copied: ["Copied", "បានចម្លង"],
+  copiedPaste: ["Copied. Paste it into the assistant.", "បានចម្លង។ សូមបិទភ្ជាប់ទៅក្នុងជំនួយការ។"],
   linkCopied: ["Link copied", "បានចម្លងតំណ"],
   notAFile: ["Choose a photo, a scan or a PDF.", "សូមជ្រើស រូបថត ស្កេន ឬ PDF។"],
   cannotOpen: ["This file could not be opened.", "មិនអាចបើកឯកសារនេះបានទេ។"],

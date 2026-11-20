@@ -102,7 +102,7 @@ export class OcrAsk extends Sheet {
     this.passageLang = "und-Khmr";
     this.initial = "";
     this.question = "";
-    this.dest = DESTINATIONS[0].id;
+    this.dest = "copy";   // the neutral choice is preselected: the page nudges toward no company
     this.busy = false;
   }
   protected updated(changed: PropertyValues) {
@@ -117,11 +117,10 @@ export class OcrAsk extends Sheet {
     this.busy = true;
     const p = prompt(this.passage, this.question);
     try {
-      if (d.link) {
-        window.open(d.link(p), "_blank", "noopener,noreferrer");
-      } else {
-        toast(t((await copyText(p)) ? "copied" : "cannotCopy"));
-      }
+      // copy first (inside the press), then open the assistant in the same task, so no browser blocks the new tab
+      const copied = copyText(p);
+      if (d.open) window.open(d.open, "_blank", "noopener,noreferrer");
+      toast(t((await copied) ? (d.open ? "copiedPaste" : "copied") : "cannotCopy"));
       this.dialog?.close();
     } finally {
       this.busy = false;
@@ -139,6 +138,7 @@ export class OcrAsk extends Sheet {
         <textarea rows="2" .value=${this.question} @input=${(e: Event) => { this.question = (e.target as HTMLTextAreaElement).value; }}></textarea>
       </label>
       <p class="sh">${t("askIn")}</p>
+      <p class="mt-0 mb-8 text-small text-ink-dim">${t("copyThenOpen")}</p>
       <div class="card" role="radiogroup" aria-label=${t("askIn")}>
         ${DESTINATIONS.map((d) => html`<label class="flex cursor-pointer items-start gap-12 border-t border-line py-11 first:border-t-0 first:pt-2">
           <input type="radio" name="ask-in" value=${d.id} .checked=${this.dest === d.id} @change=${() => { this.dest = d.id; }}
@@ -151,7 +151,7 @@ export class OcrAsk extends Sheet {
       </div>
       <div class="note">${t("askCaution")}</div>
       <button class="btn mt-10" ?disabled=${this.busy} aria-busy=${this.busy ? "true" : "false"} @click=${this.ask}>
-        ${this.busy ? html`${dots()}<span class="sr-only">${t("working")}</span>` : html`${chosen.link ? EXT() : COPY()}${t("ask")}`}
+        ${this.busy ? html`${dots()}<span class="sr-only">${t("working")}</span>` : html`${chosen.open ? EXT() : COPY()}${t("ask")}`}
       </button>
       <p class="fine mt-12 mb-0">${t("nothingLeaves")}</p>
     </dialog>`;

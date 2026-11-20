@@ -1,15 +1,11 @@
-/** Where "Ask about this" can take a passage (state 10). Nothing leaves the page until the person presses Ask, and then
- *  only to the place they chose: a link opens in a new tab with the passage and question filled in, or — with no link —
- *  the two are copied, ready to paste anywhere.
+/** Where "Ask about this" can take a passage (state 10). Founder 2026-11-20: *"approve"* (list the assistants, Buddha AI
+ *  first). ⚠️ Buddha AI is NOT offered: siliconwat.com describes it but has no chat yet (checked 2026-11-20), so there is
+ *  nothing to take a passage to. It goes first in this list the day it exists.
  *
- *  ⏳ OPEN FOUNDER DECISION — which assistants to offer. The drawings show three more choices above "Just copy it":
- *     · "Buddha AI · siliconwat.com" (From Silicon Wat℠), marked "[ checked in the build ]": it cannot take a passage by
- *       link today, so it is NOT offered;
- *     · two "[ Assistant name ]" rows (Opens in a new tab): which general assistants to name is undecided.
- *  ⛔ Invent none. To add one when it is settled:
- *       { id: "…", name: "…", note: "opensNewTab", link: (prompt) => "https://…?q=" + encodeURIComponent(prompt) }
- *  (an `i18n` key for its name, or a proper name that stays the same in both languages). A link must take the prompt in its
- *  URL — nothing is sent from this page. */
+ *  The assistants and their order are bedok.siliconwat.org's own (src/components/sw-main/sw-reader: Gemini, Grok, DeepSeek,
+ *  Meta AI, ChatGPT), named as their makers write them, and so is the way it works there: the passage and the question are
+ *  COPIED, and the assistant opens in a new tab for the person to paste into. bedok's comments say why a prompt in the link
+ *  was dropped (a length limit). So nothing leaves this device until the person pastes it themselves. */
 import type { Key } from "./i18n";
 
 export interface Destination {
@@ -17,12 +13,17 @@ export interface Destination {
   /** an i18n key, or a proper name shown as is in both languages */
   name: Key | { proper: string };
   note: Key;
-  /** the address that opens it with the prompt filled in; null = copy the prompt instead */
-  link: ((prompt: string) => string) | null;
+  /** the assistant's own address, opened after the prompt is copied; null = copy only */
+  open: string | null;
 }
 
 export const DESTINATIONS: Destination[] = [
-  { id: "copy", name: "justCopy", note: "justCopySub", link: null },
+  { id: "gemini", name: { proper: "Gemini" }, note: "opensNewTab", open: "https://gemini.google.com/" },
+  { id: "grok", name: { proper: "Grok" }, note: "opensNewTab", open: "https://grok.com/" },
+  { id: "deepseek", name: { proper: "DeepSeek" }, note: "opensNewTab", open: "https://chat.deepseek.com/" },
+  { id: "meta", name: { proper: "Meta AI" }, note: "opensNewTab", open: "https://www.meta.ai/" },
+  { id: "chatgpt", name: { proper: "ChatGPT" }, note: "opensNewTab", open: "https://chatgpt.com/" },
+  { id: "copy", name: "justCopy", note: "justCopySub", open: null },
 ];
 
 /** The passage and the question, as one prompt. */
