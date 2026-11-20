@@ -11,7 +11,8 @@ import { join, resolve } from "node:path";
 const args = process.argv.slice(2);
 const out = args[args.indexOf("--out") + 1];
 const listen = args.includes("--listen");
-const files = args.filter((a, i) => a !== "--out" && a !== "--listen" && args[i - 1] !== "--out").map((f) => resolve(f));
+const range = args.includes("--range") ? args[args.indexOf("--range") + 1].split("-").map(Number) : null;   // a PDF: read pages a–b
+const files = args.filter((a, i) => a !== "--out" && a !== "--listen" && a !== "--range" && args[i - 1] !== "--out" && args[i - 1] !== "--range").map((f) => resolve(f));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const server = spawn("nice", ["-n", "10", "npx", "vite", "preview", "--port", "4318", "--strictPort"], { stdio: "ignore" });
 const prof = mkdtempSync(join(tmpdir(), "ocr-e2e-"));
@@ -51,13 +52,21 @@ try {
     const { nodeId } = await send("DOM.querySelector", { nodeId: root.nodeId, selector: "#pick-file" }, s);
     const t0 = Date.now();
     await send("DOM.setFileInputFiles", { nodeId, files: [f] }, s);
+    if (range) {   // the page chooser (state 1b): A range, tap the first and last page, Read these pages
+      for (let i = 0; i < 60 && !(await evalIn(s, "!!document.querySelector('[data-n]')")); i++) await sleep(250);
+      await evalIn(s, `(() => { const b = (re) => [...document.querySelectorAll('button')].find(x => re.test(x.textContent.trim()));
+        b(/^A range$/).click(); document.querySelector('[data-n="${range[0]}"]').click(); document.querySelector('[data-n="${range[1]}"]').click();
+        setTimeout(() => b(/^Read these pages$/).click(), 300); })()`);
+    }
     let done = false;
     while (!done && Date.now() - t0 < 600000) {
       await sleep(1500);
-      done = await evalIn(s, "[...document.querySelectorAll('button')].some(b => /Read another page/.test(b.textContent))");
+      done = await evalIn(s, "[...document.querySelectorAll('button')].some(b => /Read another page|Try another page/.test(b.textContent))");
     }
     const page = await evalIn(s, `({ lines: [...document.querySelectorAll('[data-line]')].map(e => e.textContent),
-      leaf: document.querySelector('[role=group][aria-label="This page is in"] [aria-pressed=true]')?.textContent?.trim(), h1: document.querySelector('h1')?.textContent?.trim() })`);
+      leaf: [...document.querySelectorAll('[role=group][aria-label="This page is in"] [aria-pressed=true]')].map(e => e.textContent.trim()).join(","),
+      pages: [...document.querySelectorAll('[data-page]')].map(e => e.textContent.trim()), h1: document.querySelector('h1')?.textContent?.trim(),
+      shown: document.querySelector('main')?.innerText.slice(0, 400) })`);
     let heard = null;
     if (listen && done) {   // select line 2, press Listen with a real click, and wait for the voice to play
       const tts = [];

@@ -125,11 +125,24 @@ export const reader: Reader = {
     let leaf: Leaf = opts.leaf ?? "pali";
     const seen = new Map<string, Line>();   // file + box → line, so a line read for the look is not read twice
     if (!opts.leaf) {
-      const f = fileFor(opts.model, "pali"), boxes = boxesOf(plain);
+      const boxes = boxesOf(plain);
       const pick = [...new Set([0.2, 0.35, 0.5, 0.65, 0.8, 0.95].map((q) => Math.min(boxes.length - 1, Math.floor(q * boxes.length))))];
-      const probe: Line[] = [];
-      for (const i of pick) { aborted(signal); const l = await readBox(f, px, boxes[i]); probe.push(l); seen.set(f + boxes[i].join(), l); }
-      leaf = detectLeaf(probe.map((l) => l.text).join(" "));
+      const look = async (f: string) => {
+        const probe: Line[] = [];
+        for (const i of pick) { aborted(signal); const l = await readBox(f, px, boxes[i]); probe.push(l); seen.set(f + boxes[i].join(), l); }
+        return probe;
+      };
+      const pf = fileFor(opts.model, "pali"), kf = fileFor(opts.model, "khmer");
+      if (pf === kf) {
+        // one model that knows both alphabets (pilot 4's joint models): the letters it reads decide (src/read/leaf.ts)
+        leaf = detectLeaf((await look(pf)).map((l) => l.text).join(" "));
+      } else {
+        // two single-leaf models (interim): each can only write its own alphabet, so text cannot decide — a Pāli model never
+        // writes Khmer-only letters. The model that reads the page more confidently decides (2026-11-20, four test pages:
+        // Pāli page 80 vs 19 · Khmer page 36 vs 65 · Khmer in another typeface 13 vs 56 · English 11 vs 13)
+        const conf = (ls: Line[]) => median(ls.map((l) => l.confidence));
+        leaf = conf(await look(kf)) > conf(await look(pf)) ? "khmer" : "pali";
+      }
     }
     hooks?.onLeaf?.(leaf);
     const bands = leaf === "khmer" ? textLines(px.line, { splitTall: true }) : plain;   // Khmer: touching lines are split
