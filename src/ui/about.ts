@@ -15,7 +15,7 @@ const LICENSES =
   "Most accurate: Apache-2.0. Public domain: CC0. The license matters only if you share a model file itself. " +
   "The page images used in training are not released; the transcriber's typed text is published as a dataset (CC0), crediting the Buddhist Institute.";
 const CREDITS: [string, string][] = [
-  ["Transcription", "Se Mong Ly (សេ ម៉ុងលី)"],
+  ["Transcription", "Se Mong Ly (លី ម៉ុង សែ)"],
   ["Text", "the Buddhist Institute edition of the Tipiṭaka (Phnom Penh, 1927–69)"],
   ["Scans", "Upāsikā Kang Huychan and family · Lok Kru Aggapaṇḍita But Savong · Srong Chanda · 5000-years.org, given as dhamma dāna"],
   ["Made by", "Silicon Wat℠, with Miss Aquarius℠ (AI collaboration, disclosed)"],

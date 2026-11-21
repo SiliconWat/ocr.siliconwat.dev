@@ -53,7 +53,7 @@ export class OcrTerms extends Light {
       <div class="note">${DRAFT}</div>
       ${km ? html`<p class="fine mt-0 mb-12" lang="km">${t("staysEnglish")}</p>` : ""}
       ${SECTIONS.map(([h, ps]) => html`<div class="card"><h2>${h}</h2>${ps.map((p) => html`<p>${sm(p)}</p>`)}</div>`)}
-      <p class="fine">Contact: [ to come ]</p>
+      <p class="fine">Contact: support@siliconwat.dev</p>
     </div>`;
   }
 }
