@@ -23,8 +23,17 @@ function blankPage(w = 860, h = 1340): Page {
 let ready = false;
 export const fakeReader: Reader = {
   async isReady() { return ready; },
+  async recrop(page) { return page; },
   async prepare() { if (!ready) { await wait(1500); ready = true; } },
-  async openImage() { return blankPage(); },
+  async openImage() {
+    // ?demo&photo: behave as if the picture were a phone photo, so the Adjust step (state 1c) can be built and checked
+    const p = blankPage();
+    if (new URLSearchParams(location.search).has("photo")) {
+      p.photo = true; p.source = { url: p.preview, width: p.width, height: p.height };
+      p.corners = [[60, 80], [p.width - 50, 70], [p.width - 70, p.height - 90], [45, p.height - 60]];
+    }
+    return p;
+  },
   async openPdf(): Promise<PdfDoc> {
     return { pages: 12, async thumbnail() { return blankPage(172, 268).preview; }, async page() { return blankPage(); }, close() {} };
   },

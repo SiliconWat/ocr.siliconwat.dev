@@ -80,6 +80,7 @@ const median = (xs: number[]) => { const s = [...xs].sort((a, b) => a - b); retu
 const aborted = (s?: AbortSignal) => { if (s?.aborted) throw new DOMException("The read was stopped", "AbortError"); };
 
 export const reader: Reader = {
+  async recrop(page) { return page; },   // ⏳ replaced by the photo pipeline (src/read/photo.ts), being built
   async isReady(model) {
     for (const f of filesOf(model)) if (!workers.has(f) && (await idbGet(`./${f}.traineddata`).catch(() => undefined)) === undefined) return false;
     return true;

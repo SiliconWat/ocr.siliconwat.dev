@@ -7,11 +7,21 @@ export type ModelId = "accurate" | "public";
 /** Which leaf of the opening a page is: the Pāli, or its Khmer translation. Both are printed in Khmer script. */
 export type Leaf = "pali" | "khmer";
 
+/** Four corners of a page in a picture: top-left, top-right, bottom-right, bottom-left, in the ORIGINAL picture's pixels
+ *  (`Page.source` is that picture). */
+export type Quad = [[number, number], [number, number], [number, number], [number, number]];
+
 /** A page ready to read: an image the screens can show, and the scale from line boxes to that image. */
 export interface Page {
   preview: string;            // an object URL of the page image, for drawing the lines found over it
   width: number; height: number;   // the preview's size in pixels
   scale: number;              // a Line box × scale = preview pixels
+  /** true when the reader judged this a PHOTO or a SCREENSHOT (not a clean scan or a PDF page): it found the page inside the
+   *  picture and evened out the light. The screens then offer "Adjust the page" (state 1c) before reading. */
+  photo?: boolean;
+  /** for a photo: the original picture (object URL + size) and where the reader found the page in it */
+  source?: { url: string; width: number; height: number };
+  corners?: Quad;
 }
 
 /** A PDF the person chose: its pages, read one at a time on request. A volume runs to ~800 pages, so nothing is read
@@ -48,4 +58,6 @@ export interface Reader {
   openImage(file: Blob): Promise<Page>;
   openPdf(file: Blob): Promise<PdfDoc>;
   read(page: Page, opts: { model: ModelId; leaf?: Leaf }, hooks?: ReadHooks, signal?: AbortSignal): Promise<ReadResult>;
+  /** The person moved the corners (state 1c): the page cut out of `page.source` at these corners, flattened. */
+  recrop(page: Page, corners: Quad): Promise<Page>;
 }
