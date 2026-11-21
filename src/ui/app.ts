@@ -475,7 +475,7 @@ export class OcrApp extends Light {
     const c = themeChoice();
     const b = (v: ThemeChoice, k: "system" | "light" | "dark") =>
       html`<button aria-pressed=${c === v ? "true" : "false"} @click=${() => this.theme(v)}>${t(k)}</button>`;
-    return html`<footer class="mt-20 flex flex-wrap items-center justify-between gap-10 border-t border-line pt-12 pb-24 text-foot text-ink-faint">
+    return html`<footer class="mt-20 flex flex-wrap items-center justify-between gap-10 border-t border-line pt-12 pb-24 text-foot text-ink-dim">
       <span><a href="#about" class="text-ink-dim underline underline-offset-2">${t("aboutLink")}</a> · <a href="#terms" class="text-ink-dim underline underline-offset-2">${t("termsLink")}</a> · ${t("visits")}</span>
       <div class="seg" role="group">${b("system", "system")}${b("light", "light")}${b("dark", "dark")}</div>
     </footer>`;

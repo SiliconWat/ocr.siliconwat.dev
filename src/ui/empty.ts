@@ -57,7 +57,7 @@ export class OcrEmpty extends Light {
   private radio(id: ModelId, name: "accurate" | "public", sub: "accurateSub" | "publicSub", lic: string) {
     return html`<label class="flex cursor-pointer items-start gap-12 border-t border-line py-11 first:border-t-0 first:pt-2">
       <input type="radio" name="model" value=${id} .checked=${this.model === id} @change=${() => this.emit("model", id)}
-        class="mt-3 size-18 flex-none cursor-pointer appearance-none rounded-pill border-2 border-line-strong checked:border-6 checked:border-accent" />
+        class="mt-0 size-24 flex-none cursor-pointer appearance-none rounded-pill border-2 border-line-strong checked:border-7 checked:border-accent" />
       <span>
         <span class="flex flex-wrap items-center gap-8 text-label font-strong">${t(name)} <span class="lic">${lic}</span></span>
         <span class="block text-small text-ink-dim">${t(sub)}</span>

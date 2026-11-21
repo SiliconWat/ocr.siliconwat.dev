@@ -142,7 +142,7 @@ export class OcrAsk extends Sheet {
       <div class="card" role="radiogroup" aria-label=${t("askIn")}>
         ${DESTINATIONS.map((d) => html`<label class="flex cursor-pointer items-start gap-12 border-t border-line py-11 first:border-t-0 first:pt-2">
           <input type="radio" name="ask-in" value=${d.id} .checked=${this.dest === d.id} @change=${() => { this.dest = d.id; }}
-            class="mt-3 size-18 flex-none cursor-pointer appearance-none rounded-pill border-2 border-line-strong checked:border-6 checked:border-accent" />
+            class="mt-0 size-24 flex-none cursor-pointer appearance-none rounded-pill border-2 border-line-strong checked:border-7 checked:border-accent" />
           <span>
             <span class="block text-label font-strong">${this.name(d)}</span>
             <span class="block text-small text-ink-dim">${t(d.note)}</span>
