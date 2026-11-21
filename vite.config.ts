@@ -1,6 +1,7 @@
 import { defineConfig, type Plugin } from "vite";
 import tailwindcss from "@tailwindcss/vite";
 import { execSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
 /** The build's commit, in every error report (src/report.ts), so a failure can be tied to the build that had it. */
 const COMMIT = (() => { try { return execSync("git rev-parse --short=12 HEAD").toString().trim(); } catch { return "unknown"; } })();
@@ -21,6 +22,15 @@ export default defineConfig({
   define: { __COMMIT__: JSON.stringify(COMMIT) },
   build: {
     target: "es2022",
+    // two entries, one site: / (English) and /km/ (the Khmer share link: its title, description and picture are Khmer).
+    // km/index.html carries index.html's CSP byte for byte (test/pages.test.ts holds them equal); its asset paths are
+    // absolute, so they resolve from /km/ as from /.
+    rollupOptions: {
+      input: {
+        main: fileURLToPath(new URL("./index.html", import.meta.url)),
+        km: fileURLToPath(new URL("./km/index.html", import.meta.url)),
+      },
+    },
     // ⛔ never inline an asset as a data: URI: the CSP allows fonts from 'self' only, so an inlined font would be refused
     assetsInlineLimit: 0,
   },

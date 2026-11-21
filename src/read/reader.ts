@@ -5,7 +5,7 @@
  *  Content-Security-Policy can forbid every other host, and the image never leaves the device. */
 import { createWorker, OEM, PSM, type Worker } from "tesseract.js";
 import { get as idbGet } from "idb-keyval";
-import type { Reader, Page, PdfDoc, ReadResult, ReadHooks, ModelId, Leaf, Line } from "./types";
+import type { Reader, Page, PdfDoc, ReadResult, ReadHooks, ModelId, Leaf, Line, Quad } from "./types";
 import { fromRGBA, resize, toPGM, type Gray } from "./gray";
 import { textLines } from "./lines";
 import { lineBox, crop } from "./crop";
@@ -24,7 +24,7 @@ const MAX_LONG_SIDE = 3400;
  *  darkness cutoff — owed for photos. */
 const NOT_THIS_PRINT = 50;
 
-interface Pixels { crop: Gray; line: Gray }
+interface Pixels { crop: Gray; line: Gray; orig?: Gray }   // orig: a photo's whole picture, for recrop
 const pixels = new WeakMap<Page, Pixels>();
 
 function grayOf(src: CanvasImageSource, w: number, h: number): Gray {
@@ -45,8 +45,20 @@ async function grayURL(g: Gray): Promise<string> {
 
 /** The page is prepared by page.ts (straightened if 1° or more off level); the picture shown is then the straightened one, so
  *  the outlines of the lines found sit on it. A level page (every scan pilot 3 measured) goes through untouched. */
-async function makePage(cropGray: Gray, preview: string, pw: number, ph: number, exactHalf: boolean, line150?: Gray): Promise<Page> {
-  const p = preparePage(cropGray, exactHalf, line150);
+async function makePage(cropGray: Gray, preview: string, pw: number, ph: number, exactHalf: boolean, line150?: Gray,
+                        corners?: Quad, keepSource?: Page["source"]): Promise<Page> {
+  // corners travel in the ORIGINAL picture's pixels (the contract); a big photo is read at most MAX_LONG_SIDE, so convert
+  const source = keepSource ?? { url: preview, width: pw, height: ph };
+  const k = cropGray.w / source.width;
+  const toG = (q: Quad) => q.map(([x, y]) => [x * k, y * k]) as Quad, toOrig = (q: Quad) => q.map(([x, y]) => [Math.round(x / k), Math.round(y / k)]) as Quad;
+  const p = preparePage(cropGray, exactHalf, line150, corners ? { corners: toG(corners) } : {});
+  if (p.photo) {
+    // a phone photo or screenshot: the picture SHOWN is the flattened page (the lines found are outlined on it); the original
+    // picture is kept as the source, for "Adjust the page" (state 1c). ⛔ The original URL is never revoked here: 1c shows it.
+    const page: Page = { preview: await grayURL(p.crop), width: p.crop.w, height: p.crop.h, scale: 1, photo: true, source, corners: p.corners && toOrig(p.corners) };
+    pixels.set(page, { crop: p.crop, line: p.line, orig: cropGray });
+    return page;
+  }
   if (p.turned) { URL.revokeObjectURL(preview); preview = await grayURL(p.crop); pw = p.crop.w; ph = p.crop.h; }
   const page: Page = { preview, width: pw, height: ph, scale: pw / p.crop.w };
   pixels.set(page, { crop: p.crop, line: p.line });
@@ -80,7 +92,12 @@ const median = (xs: number[]) => { const s = [...xs].sort((a, b) => a - b); retu
 const aborted = (s?: AbortSignal) => { if (s?.aborted) throw new DOMException("The read was stopped", "AbortError"); };
 
 export const reader: Reader = {
-  async recrop(page) { return page; },   // ⏳ replaced by the photo pipeline (src/read/photo.ts), being built
+  async recrop(page, corners) {
+    // the person's corners (state 1c), in the ORIGINAL picture's pixels: the page cut out again from the whole picture
+    const px = pixels.get(page); if (!px?.orig || !page.source) return page;
+    URL.revokeObjectURL(page.preview);
+    return await makePage(px.orig, page.source.url, page.source.width, page.source.height, false, undefined, corners, page.source);
+  },
   async isReady(model) {
     for (const f of filesOf(model)) if (!workers.has(f) && (await idbGet(`./${f}.traineddata`).catch(() => undefined)) === undefined) return false;
     return true;
@@ -90,9 +107,10 @@ export const reader: Reader = {
   async openImage(blob) {
     const bmp = await createImageBitmap(blob, { imageOrientation: "from-image" });
     const s = Math.min(1, MAX_LONG_SIDE / Math.max(bmp.width, bmp.height));
-    const w = Math.round(bmp.width * s), h = Math.round(bmp.height * s);
+    const w = Math.round(bmp.width * s), h = Math.round(bmp.height * s), W = bmp.width, H = bmp.height;
     const g = grayOf(bmp, w, h); bmp.close();
-    return await makePage(g, URL.createObjectURL(blob), w, h, false);
+    // a scan keeps its preview size w×h (boxes × scale = preview pixels); a photo's source is the picture at its own size W×H
+    return await makePage(g, URL.createObjectURL(blob), W === w ? w : W, H === h ? h : H, false);
   },
 
   async openPdf(blob): Promise<PdfDoc> {

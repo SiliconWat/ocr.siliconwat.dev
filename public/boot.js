@@ -1,6 +1,7 @@
 // Runs before the page paints (a plain script in <head>, because the CSP refuses an inline one). Two jobs, nothing stored:
-//   1. the language: the stored choice → the browser's language → the timezone, as a last tiebreak only
-//      (a Khmer reader in Long Beach has a Pacific timezone, so it only tips an English or unknown browser);
+//   1. the language: the stored choice → the Khmer entry (/km/, the Khmer share link) → the browser's language → the
+//      timezone, as a last tiebreak only (a Khmer reader in Long Beach has a Pacific timezone, so it only tips an English
+//      or unknown browser);
 //   2. the theme: the stored choice → the system's light or dark.
 // src/ui/prefs.ts and src/i18n.ts take over from here (they read the result off <html>). Keys match prefs.ts KEYS.
 (function () {
@@ -12,6 +13,7 @@
     var demo = q.has("demo");
 
     var lang = demo && (q.get("lang") === "km" || q.get("lang") === "en") ? q.get("lang") : get("ocr-lang");
+    if (lang !== "km" && lang !== "en" && /^\/km(\/|$)/.test(location.pathname)) lang = "km";
     if (lang !== "km" && lang !== "en") {
         var nav = (navigator.language || "").toLowerCase();
         var tz = "";

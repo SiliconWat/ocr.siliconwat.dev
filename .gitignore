@@ -6,3 +6,5 @@ public/models/
 public/vendor/
 .DS_Store
 __pycache__/
+# the Khmer review sheet (scripts/review-km.mjs): for a reviewer, never in the site or the repo
+staging/

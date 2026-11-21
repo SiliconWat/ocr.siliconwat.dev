@@ -5,21 +5,7 @@ import { html } from "lit";
 import { Light } from "./base";
 import { t, getLang } from "../i18n";
 import { siteIcon, spot } from "./icons";
-
-/** English only, verbatim from the drawings (S7). */
-const PRIVACY =
-  "Your images and text are read on this device and never uploaded: the page is built so that it cannot send them. " +
-  "Two things leave only when you press: a passage you choose to hear (to our voice service and Azure) and a passage " +
-  "you ask about (to the assistant you chose). Visits are counted without cookies, and the count never sees an image or a word.";
-const LICENSES =
-  "Most accurate: Apache-2.0. Public domain: CC0. The license matters only if you share a model file itself. " +
-  "The page images used in training are not released; the transcriber's typed text is published as a dataset (CC0), crediting the Buddhist Institute.";
-const CREDITS: [string, string][] = [
-  ["Transcription", "Se Mong Ly (លី ម៉ុង សែ)"],
-  ["Text", "the Buddhist Institute edition of the Tipiṭaka (Phnom Penh, 1927–69)"],
-  ["Scans", "Upāsikā Kang Huychan and family · Lok Kru Aggapaṇḍita But Savong · Srong Chanda · 5000-years.org, given as dhamma dāna"],
-  ["Made by", "Silicon Wat℠, with Miss Aquarius℠ (AI collaboration, disclosed)"],
-];
+import { CREDITS, LICENSES, PRIVACY } from "./english-only";
 
 /** ℠ set small, as the drawings set it */
 const sm = (s: string) => {

@@ -1,11 +1,14 @@
 /** State 4 — the text (and 8–9 begin here): the leaf switch, the text in Khmer script, roman letters on Pāli pages only,
  *  Copy, Download .txt, "Check it against the print.", a tap on a word (→ the dictionary sheet), and a selection
- *  (→ the bar: Listen, only if the voice service exists · Ask about this · Copy). In a range, each page under its heading. */
+ *  (→ the bar: Listen, only if the voice service exists · Ask about this · Copy). In a range, each page under its heading.
+ *  Edit (NOT DRAWN, 2026-11-20) turns each text box into a field holding the page's text (Khmer script: roman letters go
+ *  off while editing); Copy and Download then take the edited text, and Done shows it with word taps working on it. The
+ *  edits live on the run, in memory only (⛔ never in the browser's storage). A photo's text offers "Adjust this page". */
 import { html, nothing } from "lit";
 import { Light, clicks } from "./base";
 import { t, langOf } from "../i18n";
-import { ASK, COPY, DOWN, SPEAK, dots, spot } from "./icons";
-import { leafRow, pageHeading, readLines, textLang, plainText, type Run } from "./run";
+import { ASK, COPY, DONE, DOWN, EDIT, SPEAK, dots, spot } from "./icons";
+import { leafRow, lineTexts, pageHeading, readLines, runText, textLang, plainText, type Run } from "./run";
 import { copyText, downloadText, toast } from "./toast";
 import { demoParam, DEMO } from "./prefs";
 import { toRoman, type Leaf } from "../read/index";
@@ -47,6 +50,8 @@ export class OcrResult extends Light {
     sel: { state: true },
     voice: { state: true },
     speaking: { state: true },
+    reopening: { type: Number },
+    editing: { state: true },
   };
   declare runs: Run[];
   declare name: string;
@@ -58,6 +63,10 @@ export class OcrResult extends Light {
   private selWord: { run: number; line: number; offset: number } | null = null;
   declare voice: Voice;
   declare speaking: "" | "busy" | "playing";
+  /** the run whose "Adjust this page" is opening its picture again (its link shows the dots); -1 = none */
+  declare reopening: number;
+  /** Edit: the text boxes are fields */
+  declare editing: boolean;
 
   private hideTimer = 0;
   private audio: HTMLAudioElement | null = null;
@@ -73,6 +82,8 @@ export class OcrResult extends Light {
     this.sel = "";
     this.voice = "sreymom";
     this.speaking = "";
+    this.reopening = -1;
+    this.editing = false;
   }
 
   connectedCallback() {
@@ -88,6 +99,7 @@ export class OcrResult extends Light {
   /** The selection, if it lies inside the text read. A collapse hides the bar a moment later, so a press on the bar
    *  (which can clear the selection on a phone) still finds the words. */
   private onSelection = () => {
+    if (this.editing) { this.sel = ""; return; } // a selection inside the field is the person's editing, not a passage
     const s = getSelection();
     const area = this.querySelector("[data-text]");
     let text = "";
@@ -135,13 +147,38 @@ export class OcrResult extends Light {
     return html`${text.slice(0, tp.start)}<mark>${text.slice(tp.start, tp.end)}</mark>${text.slice(tp.end)}`;
   }
 
-  private body(r: Run, ri: number) {
+  private body(r: Run, ri: number, multi: boolean) {
     if (r.status === "nothing") return html`<p class="fine mt-0 mb-10">${t("nothingTitle")}</p>`;
     const rom = this.roman && r.leaf === "pali";
-    return html`${r.status === "not-this-print" ? html`<div class="note">${t("otherTitle")}</div>` : ""}
+    const note = r.status === "not-this-print" ? html`<div class="note">${t("otherTitle")}</div>` : "";
+    if (this.editing) {
+      return html`${note}<textarea class="ocr" data-edit-run=${ri} lang=${textLang(r.leaf)} spellcheck="false" autocomplete="off"
+        autocapitalize="off" autocorrect="off" aria-label=${multi && r.n !== null ? t("pageN", { n: r.n }) : t("theText")}
+        .value=${runText(r)} @input=${(e: Event) => this.typed(r, e)}></textarea>`;
+    }
+    return html`${note}
       <div class="ocr ${rom ? "rom" : ""}" data-run=${ri} lang=${textLang(r.leaf, rom)} @click=${this.onTextClick}>
-        ${r.lines.map((l, li) => (l ? html`<span class="ln" data-line=${li}>${rom ? toRoman(l.text) : this.lineText(ri, li, l.text)}</span>` : nothing))}
+        ${lineTexts(r).map((s, li) => (s !== undefined ? html`<span class="ln" data-line=${li}>${rom ? toRoman(s) : this.lineText(ri, li, s)}</span>` : nothing))}
       </div>`;
+  }
+
+  // ── Edit ────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  private typed(r: Run, e: Event) {
+    const ta = e.target as HTMLTextAreaElement;
+    r.edited = ta.value;
+    fit(ta);
+  }
+  private async toggleEdit() {
+    this.editing = !this.editing;
+    this.sel = "";
+    this.emit("untap"); // an outlined word's place belongs to the text before the edit
+    if (this.editing) this.roman = false;
+    await this.updateComplete;
+    if (this.editing) this.querySelector<HTMLTextAreaElement>("textarea[data-edit-run]")?.focus({ preventScroll: true });
+    else this.querySelector<HTMLButtonElement>("[data-edit]")?.focus({ preventScroll: true });
+  }
+  protected updated() {
+    this.querySelectorAll<HTMLTextAreaElement>("textarea[data-edit-run]").forEach(fit);
   }
 
   private async copyAll() {
@@ -219,17 +256,23 @@ export class OcrResult extends Light {
       ? (listenShown() ? "clickHint" : "clickHintNoListen")
       : (listenShown() ? "tapHint" : "tapHintNoListen");
     const showScan = single?.page && single.boxes.length;
+    // Edit is offered once there is text (and stays, even if the person empties a page)
+    const editable = runs.some((r) => r.status !== "nothing" && (readLines(r).length > 0 || r.edited !== undefined));
+    const editing = this.editing;
     const text = html`
       <h1 class="h1" tabindex="-1">${t("theText")}</h1>
       <div data-text>
         ${runs.map((r, ri) => html`<section>
           ${pageHeading(r, multi)}
-          ${r.status !== "nothing" ? leafRow(r, (leaf: Leaf) => this.emit("leaf", { run: ri, leaf })) : ""}
-          ${this.body(r, ri)}
+          ${r.status !== "nothing" ? leafRow(r, editing ? undefined : (leaf: Leaf) => this.emit("leaf", { run: ri, leaf })) : ""}
+          ${this.body(r, ri, multi)}
+          ${r.photo && !editing ? html`<button class="-mt-2 mb-6 inline-flex min-h-44 items-center gap-6 text-tool font-mid text-accent underline underline-offset-2"
+              ?disabled=${this.reopening >= 0} aria-busy=${this.reopening === ri ? "true" : "false"}
+              @click=${() => this.emit("adjust", ri)}>${this.reopening === ri ? html`${dots()}<span class="sr-only">${t("working")}</span>` : t("adjustThis")}</button>` : ""}
         </section>`)}
       </div>
       ${this.bar()}
-      ${anyPali ? html`<div class="flex items-center justify-between gap-12 py-10">
+      ${anyPali && !editing ? html`<div class="flex items-center justify-between gap-12 py-10">
         <span id="roman-label">${t("roman")}</span>
         <button class="tog" role="switch" aria-checked=${this.roman ? "true" : "false"} aria-labelledby="roman-label"
           @click=${() => { this.roman = !this.roman; this.emit("untap"); }}></button>
@@ -237,9 +280,11 @@ export class OcrResult extends Light {
       <div class="mt-4 flex flex-wrap gap-8">
         <button class="tool" @click=${this.copyAll}>${COPY()}${t("copy")}</button>
         <button class="tool" @click=${this.download}>${DOWN()}${t("download")}</button>
+        ${editable || editing ? html`<button class="tool" data-edit @click=${this.toggleEdit}>
+          ${editing ? html`${DONE()}${t("done")}` : html`${EDIT()}${t("edit")}`}</button>` : ""}
       </div>
       <div class="note">${t("checkPrint")}</div>
-      <p class="fine mt-12">${this.roman && anyPali ? t("romanNote") : t(hintKey)}</p>
+      <p class="fine mt-12">${editing ? t("editNote") : this.roman && anyPali ? t("romanNote") : t(hintKey)}</p>
       <button class="btn btn-ghost mt-10 desk:inline-flex desk:w-auto desk:px-22 desk:py-12" @click=${() => this.emit("another")}>${t("readAnother")}</button>`;
 
     if (!showScan) return html`<div class="mx-auto max-w-760">${text}</div>`;
@@ -253,4 +298,13 @@ export class OcrResult extends Light {
     </div>`;
   }
 }
+/** A field as tall as its text (set through the CSSOM: the CSP refuses a style attribute). Measuring collapses it for a
+ *  moment, which can pull the page up near its end, so the scroll is put back. */
+function fit(ta: HTMLTextAreaElement) {
+  const y = window.scrollY;
+  ta.style.height = "auto";
+  ta.style.height = `${ta.scrollHeight + ta.offsetHeight - ta.clientHeight}px`;
+  if (window.scrollY !== y) window.scrollTo(0, y);
+}
+
 customElements.define("ocr-result", OcrResult);

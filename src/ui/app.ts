@@ -1,8 +1,10 @@
 /** The page: header (language, share), the current state, footer (About and credits, the beacon sentence, the theme),
  *  and the two sheets. It drives the reader through the one contract (src/read/index.ts), never what is behind it.
  *
- *  1 empty → (a PDF) 1b choose pages → (first use only) 2 getting ready → 3 reading → 4 the text · 5 nothing · 6 not this print
- *  7 About (#about) · 8 a word's entry · 9 a selection's bar · 10 Ask.  */
+ *  1 empty → (a PDF) 1b choose pages · (a photo or a screenshot) 1c adjust the page → (first use only) 2 getting ready
+ *  → 3 reading → 4 the text · 5 nothing · 6 not this print
+ *  7 About (#about) · 8 a word's entry · 9 a selection's bar · 10 Ask.
+ *  Several pictures at once are read in order like a PDF range (no 1c; each photo's text offers "Adjust this page"). */
 import { html, type PropertyValues } from "lit";
 import { Light } from "./base";
 import { t, getLang, setLang, type Lang } from "../i18n";
@@ -10,13 +12,15 @@ import { SHARE, siteIcon } from "./icons";
 import { copyText, mountToast, toast } from "./toast";
 import { reportError } from "../report";
 import { modelChoice, setModel, setTheme, themeChoice, DEMO, demoParam, type ThemeChoice } from "./prefs";
-import { newRun, readLines, textLang, type Run } from "./run";
+import { lineTexts, newRun, readLines, textLang, type Run } from "./run";
 import type { Tap } from "./result";
 import type { PagePick } from "./pages";
-import { getReader, type Leaf, type ModelId, type PdfDoc, type ReadResult } from "../read/index";
+import { getReader, type Leaf, type ModelId, type Page, type PdfDoc, type Quad, type ReadResult } from "../read/index";
+import { sameQuad } from "./adjust";
 import { lookup, entryById, wordAt, type Entry } from "../dict/index";
 import "./empty";
 import "./pages";
+import "./adjust";
 import "./progress";
 import "./result";
 import "./outcome";
@@ -24,10 +28,19 @@ import "./sheets";
 import "./about";
 import "./terms";
 
-type View = "empty" | "pages" | "ready" | "reading" | "result" | "nothing" | "other";
+type View = "empty" | "pages" | "adjust" | "ready" | "reading" | "result" | "nothing" | "other";
 
 const isPdf = (f: File) => f.type === "application/pdf" || /\.pdf$/i.test(f.name);
 const isImage = (f: File) => f.type.startsWith("image/") || /\.(jpe?g|png|webp|gif|bmp|tiff?|heic|heif|avif)$/i.test(f.name);
+/** the reader judged the picture a photo or a screenshot and found the page in it: state 1c can be offered */
+const isPhoto = (p: Page) => Boolean(p.photo && p.source && p.corners);
+/** file names in natural order: a phone numbers its pictures (IMG_2 before IMG_10) */
+const byName = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
+/** lets go of a page's pictures: the page image and, for a photo, the original picture */
+function release(p: Page) {
+  URL.revokeObjectURL(p.preview);
+  if (p.source && p.source.url !== p.preview) URL.revokeObjectURL(p.source.url);
+}
 
 export class OcrApp extends Light {
   static properties = {
@@ -40,6 +53,8 @@ export class OcrApp extends Light {
     tap: { state: true },
     dict: { state: true },
     ask: { state: true },
+    adjustBusy: { state: true },
+    reopening: { state: true },
   };
   declare view: View;
   declare about: boolean;
@@ -50,6 +65,13 @@ export class OcrApp extends Light {
   declare tap: Tap | null;
   declare dict: { entry: Entry | null; fromRef: boolean } | null;
   declare ask: { passage: string; lang: string; initial: string } | null;
+  /** state 1c is cutting the page again (its button shows the dots) */
+  declare adjustBusy: boolean;
+  /** the run whose "Adjust this page" is opening its picture again (that link shows the dots); -1 = none */
+  declare reopening: number;
+  /** state 1c: which run, and whether it was opened from the text (then it offers "Back to the text") */
+  adjustAt = 0;
+  adjustBack = false;
 
   name = "";
   doc: PdfDoc | null = null;
@@ -74,6 +96,8 @@ export class OcrApp extends Light {
     this.tap = null;
     this.dict = null;
     this.ask = null;
+    this.adjustBusy = false;
+    this.reopening = -1;
   }
 
   connectedCallback() {
@@ -119,6 +143,50 @@ export class OcrApp extends Light {
   }
 
   // ── files ───────────────────────────────────────────────────────────────────────────────────────────────────────────
+  /** Files chosen, dropped or pasted. One picture or one PDF is opened as before. Several pictures are read in order
+   *  (natural sort by name), each under its "Page n" heading, like a PDF range; a PDF is read on its own. */
+  async onFiles(files: File[]): Promise<void> {
+    if (files.length <= 1) {
+      if (files[0]) await this.onFile(files[0]);
+      return;
+    }
+    const pics = files.filter((f) => !isPdf(f) && isImage(f)).sort((a, b) => byName.compare(a.name, b.name));
+    if (files.some(isPdf)) toast(t("pdfAlone"));
+    else if (pics.length < files.length) toast(t("notAFile"), true);
+    if (pics.length === 1) { await this.onFile(pics[0]); return; }
+    if (!pics.length) return;
+    this.reset();
+    this.name = pics[0].name;
+    this.runs = pics.map((f, k) => this.pictureRun(f, k + 1));
+    this.opening = true; // "Choose a file" shows its dots while the first picture is opened
+    await this.readRuns(this.runs.map((_, i) => i));
+  }
+
+  /** One picture among several. It is opened when its turn comes, and again whenever it is needed later (a finished page
+   *  lets its picture go, as a PDF range does); a photo the person adjusted is cut again at their corners. */
+  private pictureRun(file: File, n: number): Run {
+    const run: Run = newRun(n, async () => {
+      const reader = await getReader();
+      const page = await reader.openImage(file);
+      run.photo = isPhoto(page);
+      return run.photo && run.adjusted ? this.recrop(page, run.adjusted) : page;
+    });
+    return run;
+  }
+
+  /** The page cut out of its picture at these corners (Reader.recrop). The new page keeps the picture and the corners, so
+   *  state 1c can open from it again; the old cut's image is let go.
+   *  ⛔ Never COPY a Page: the reader knows its pages by the object itself (src/read/reader.ts keeps their pixels in a
+   *  WeakMap), and refuses to read or re-cut a copy. Anything missing is filled in on the reader's own object. */
+  async recrop(page: Page, corners: Quad): Promise<Page> {
+    const reader = await getReader();
+    const next = await reader.recrop(page, corners);
+    if (next.preview !== page.preview && page.preview !== page.source?.url) URL.revokeObjectURL(page.preview);
+    next.source ??= page.source;
+    next.corners ??= corners;
+    return next;
+  }
+
   async onFile(file: File): Promise<void> {
     if (!isPdf(file) && !isImage(file)) { toast(t("notAFile"), true); return; }
     this.reset();
@@ -143,7 +211,11 @@ export class OcrApp extends Light {
         const page = await reader.openImage(file);
         if (session !== this.session) return;
         this.opening = false;
-        this.runs = [newRun(null, async () => page, page)];
+        const run = newRun(null, async () => run.page ?? page, page);
+        run.photo = isPhoto(page);
+        this.runs = [run];
+        // a photo or a screenshot: show where the page was found, and let the person move its corners first (state 1c)
+        if (run.photo) { this.adjustAt = 0; this.adjustBack = false; this.view = "adjust"; return; }
         await this.readRuns([0]);
       }
     } catch (e) {
@@ -189,6 +261,7 @@ export class OcrApp extends Light {
         this.current = i;
         run.page ??= await run.get();
         if (!live()) return;
+        run.edited = undefined; // a new reading replaces the person's edits of the old one
         run.boxes = [];
         run.lines = [];
         run.status = "reading";
@@ -213,7 +286,7 @@ export class OcrApp extends Light {
         if (this.demoStatus === "nothing") { run.lines = []; run.boxes = []; }
         // in a range, a finished page's picture is not shown again: let it go (the run re-opens it if re-read)
         if (this.runs.length > 1 && run.page && i !== which[which.length - 1]) {
-          URL.revokeObjectURL(run.page.preview);
+          release(run.page);
           run.page = null;
         }
         this.bump();
@@ -262,7 +335,7 @@ export class OcrApp extends Light {
     this.session++;
     this.ac?.abort();
     this.ac = null;
-    for (const r of this.runs) if (r.page) URL.revokeObjectURL(r.page.preview);
+    for (const r of this.runs) if (r.page) release(r.page);
     this.runs = [];
     this.doc?.close();
     this.doc = null;
@@ -270,6 +343,59 @@ export class OcrApp extends Light {
     this.dict = null;
     this.ask = null;
     this.opening = false;
+    this.adjustBusy = false;
+    this.reopening = -1;
+  }
+
+  // ── 1c · adjust the page ────────────────────────────────────────────────────────────────────────────────────────────
+  /** "Adjust this page" on the text: open run i's picture again if it was let go, then state 1c. */
+  private async adjustRun(i: number) {
+    const run = this.runs[i];
+    if (!run || this.reopening >= 0) return;
+    const session = this.session;
+    if (!run.page) {
+      this.reopening = i;
+      try {
+        run.page = await run.get();
+      } catch (e) {
+        reportError("open", e);
+        if (session === this.session) { this.reopening = -1; toast(t("cannotOpen"), true); }
+        return;
+      }
+      if (session !== this.session) return;
+      this.reopening = -1;
+    }
+    this.tap = null;
+    this.dict = null;
+    this.ask = null;
+    this.adjustAt = i;
+    this.adjustBack = true;
+    this.view = "adjust";
+  }
+
+  /** "Read this page" or "Use the whole picture" in state 1c: if the corners moved, cut the page there; then read it. */
+  private async adjusted(corners: Quad) {
+    const i = this.adjustAt;
+    const run = this.runs[i];
+    const page = run?.page;
+    if (!page || this.adjustBusy) return;
+    const session = this.session;
+    this.adjustBusy = true;
+    try {
+      if (!sameQuad(run.adjusted ?? page.corners, corners)) {
+        const next = await this.recrop(page, corners);
+        if (session !== this.session) return;
+        run.page = next;
+        run.adjusted = corners;
+      }
+      await this.readRuns([i]);
+    } catch (e) {
+      if (session !== this.session) return;
+      reportError("read", e);
+      toast(t("cannotRead"), true);
+    } finally {
+      if (session === this.session) this.adjustBusy = false;
+    }
   }
 
   private reread(i: number, leaf: Leaf) {
@@ -282,7 +408,8 @@ export class OcrApp extends Light {
 
   // ── 8 · a word ──────────────────────────────────────────────────────────────────────────────────────────────────────
   async onWord(d: { run: number; line: number; offset: number }) {
-    const text = this.runs[d.run]?.lines[d.line]?.text;
+    const run = this.runs[d.run];
+    const text = run ? lineTexts(run)[d.line] : undefined; // the person's edit, if they made one
     if (!text) return;
     const entry = await lookup(text, d.offset);
     let span = wordAt(text, d.offset);
@@ -302,7 +429,8 @@ export class OcrApp extends Light {
 
   // ── header and footer ───────────────────────────────────────────────────────────────────────────────────────────────
   private async share() {
-    const url = location.origin + location.pathname;
+    // the page in Khmer shares the Khmer entry (km/index.html: its title, description and picture are Khmer)
+    const url = location.origin + (getLang() === "km" ? "/km/" : "/");
     const nav = navigator as Navigator & { share?: (d: ShareData) => Promise<void> };
     if (nav.share) {
       try {
@@ -329,7 +457,7 @@ export class OcrApp extends Light {
   private header() {
     const l = getLang();
     return html`<header class="flex items-center justify-between gap-10 pt-16 pb-8 desk:pt-22 desk:pb-12">
-      <a href="/" class="flex min-w-0 items-center gap-8 text-ink no-underline" @click=${this.home}>
+      <a href=${location.pathname.startsWith("/km/") ? "/km/" : "/"} class="flex min-w-0 items-center gap-8 text-ink no-underline" @click=${this.home}>
         ${siteIcon(26)}<span class="text-field font-strong tracking-wm whitespace-nowrap">ocr.siliconwat.dev</span>
       </a>
       <div class="flex items-center gap-8">
@@ -359,12 +487,19 @@ export class OcrApp extends Light {
     switch (this.view) {
       case "empty":
         return html`<ocr-empty .model=${this.model} ?opening=${this.opening}
-          @file=${(e: CustomEvent<File>) => this.onFile(e.detail)}
+          @files=${(e: CustomEvent<File[]>) => this.onFiles(e.detail)}
           @model=${(e: CustomEvent<ModelId>) => { this.model = e.detail; setModel(e.detail); }}></ocr-empty>`;
       case "pages":
         return html`<ocr-pages .doc=${this.doc} .name=${this.name} ?busy=${this.opening}
           @pages=${(e: CustomEvent<PagePick>) => this.readPages(e.detail)}
           @file=${(e: CustomEvent<File>) => this.onFile(e.detail)}></ocr-pages>`;
+      case "adjust": {
+        const run = this.runs[this.adjustAt];
+        return html`<ocr-adjust .page=${run?.page ?? null} .start=${run?.adjusted ?? run?.page?.corners ?? null}
+          ?busy=${this.adjustBusy} ?back=${this.adjustBack}
+          @adjust=${(e: CustomEvent<Quad>) => this.adjusted(e.detail)}
+          @back=${() => { this.view = "result"; }}></ocr-adjust>`;
+      }
       case "ready":
       case "reading":
         return html`<ocr-progress .view=${this.view} .runs=${this.runs} .current=${this.current} .model=${this.model} .rev=${this.rev}
@@ -374,8 +509,9 @@ export class OcrApp extends Light {
         return html`<ocr-outcome .kind=${this.view} .run=${this.runs[0] ?? null}
           @another=${() => this.again()} @anyway=${() => { this.view = "result"; }}></ocr-outcome>`;
       case "result":
-        return html`<ocr-result .runs=${this.runs} .name=${this.name} .rev=${this.rev} .tap=${this.tap}
+        return html`<ocr-result .runs=${this.runs} .name=${this.name} .rev=${this.rev} .tap=${this.tap} .reopening=${this.reopening}
           @leaf=${(e: CustomEvent<{ run: number; leaf: Leaf }>) => this.reread(e.detail.run, e.detail.leaf)}
+          @adjust=${(e: CustomEvent<number>) => this.adjustRun(e.detail)}
           @another=${() => this.again()}
           @untap=${() => { this.tap = null; }}
           @word=${(e: CustomEvent<{ run: number; line: number; offset: number }>) => this.onWord(e.detail)}

@@ -24,7 +24,8 @@ Ask copies the passage; nothing is sent. Error reports carry no Khmer script at 
 |---|---|
 | `src/read/` | The reader. `lines.ts` finds printed lines, `crop.ts` cuts each one out, `page.ts` prepares a page (straightened if tilted, `deskew.ts`), `reader.ts` runs tesseract.js and pdf.js, `leaf.ts` tells Pāli from Khmer, `roman.ts` gives roman letters, `models.ts` names the model files. |
 | `src/dict/` | One-tap lookup in Chuon Nath's dictionary. The data is in `public/dict/`, one file per first letter, built by `scripts/build-dict.mjs` from khmer.siliconwat.dev's published copy. |
-| `src/ui/` | The screens (Lit, light DOM, Tailwind fed by the drawing's tokens in `src/styles.css`). Words, English and Khmer, are in `src/i18n.ts`. |
+| `src/ui/` | The screens (Lit, light DOM, Tailwind fed by the drawing's tokens in `src/styles.css`). Words, English and Khmer, are in `src/i18n.ts`; the texts that stay English until a Khmer translation is approved are in `src/ui/english-only.ts`. |
+| `km/index.html` | The Khmer entry, `/km/` (the Khmer share link): `index.html`'s head with Khmer title, description and picture. Its CSP must stay byte for byte the same as `index.html`'s; `test/pages.test.ts` fails if it does not. |
 | `src/listen.ts` · `src/ask.ts` · `src/report.ts` | Listen · Ask · error reports. |
 | `public/models/` | The reader models: not in git before launch; copied in by `scripts/models.mjs`. |
 | `public/vendor/` | tesseract.js and pdf.js, copied from `node_modules` by `scripts/vendor.mjs` on every dev and build. |
@@ -34,10 +35,12 @@ Ask copies the passage; nothing is sent. Error reports carry no Khmer script at 
 ```sh
 npm install
 node scripts/models.mjs     # before launch only: the models, from the training repo
-npm run dev                 # local; add ?demo to the URL for a stand-in reader (every screen, no models needed)
+npm run dev                 # local; add ?demo to the URL for a stand-in reader (every screen, no models needed;
+                            #   &photo makes it read a photo, for "Adjust the page"; src/ui/demo.ts lists the states)
 npm run build               # REFUSES while a model is interim or missing (scripts/check-models.mjs)
 npm run build:dev           # the same build without that refusal, for local checks
-npm test                    # the dictionary and the error report
+npm test                    # the dictionary, the error report, the two entries' heads and the starting language
+npm run review-km           # the Khmer review sheet for a native reader: staging/review-km.html (never in the build)
 ```
 
 The checks that hold the reader to what was measured:

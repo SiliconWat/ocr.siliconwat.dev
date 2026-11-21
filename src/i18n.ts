@@ -57,6 +57,21 @@ const S = {
   page: ["Page", "ទំព័រ"],
   // NOT DRAWN: the small heading over each page's text when a range is read
   pageN: ["Page {n}", "ទំព័រ {n}"],
+  // ── 1c · adjust the page (a photo or a screenshot) ─────────────────────────────────────────────────────────────────
+  // NOT DRAWN (state 1c, photos and screenshots, 2026-11-20): our words, our Khmer draft
+  adjustTitle: ["Adjust the page", "តម្រឹមទំព័រ"],
+  adjustHelp: ["Move the corners to the page's corners.", "រំកិលជ្រុងទាំងបួន ទៅត្រង់ជ្រុងនៃទំព័រ។"],
+  adjustKeys: ["Arrow keys move a corner. Hold Shift to move it further.", "គ្រាប់ចុចព្រួញ រំកិលជ្រុងមួយ។ សង្កត់ Shift ដើម្បីរំកិលវាឆ្ងាយជាងនេះ។"],
+  cornerTL: ["Top-left corner", "ជ្រុងខាងលើ ខាងឆ្វេង"],
+  cornerTR: ["Top-right corner", "ជ្រុងខាងលើ ខាងស្តាំ"],
+  cornerBR: ["Bottom-right corner", "ជ្រុងខាងក្រោម ខាងស្តាំ"],
+  cornerBL: ["Bottom-left corner", "ជ្រុងខាងក្រោម ខាងឆ្វេង"],
+  yourPicture: ["Your picture", "រូបរបស់អ្នក"],
+  readThis: ["Read this page", "អានទំព័រនេះ"],
+  wholePicture: ["Use the whole picture", "ប្រើរូបទាំងមូល"],
+  backToText: ["Back to the text", "ត្រឡប់ទៅអត្ថបទវិញ"],
+  // on each page's text, for a photo or a screenshot: opens state 1c for that page and reads it again
+  adjustThis: ["Adjust this page", "តម្រឹមទំព័រនេះ"],
   // ── 2 · first use ──────────────────────────────────────────────────────────────────────────────────────────────────
   ready: ["Getting the reader ready", "កំពុងរៀបចំម៉ូដែលអាន"],
   readyLede: ["This happens once. The reader is kept in this browser, so next time it starts straight away.",
@@ -93,6 +108,11 @@ const S = {
   romanNote: ["Roman letters are our own transliteration, for convenience. The Khmer script is the text.",
     "អក្សរឡាតាំងជាការចម្លងអក្សររបស់យើង ដើម្បីភាពងាយស្រួល។ អក្សរខ្មែរគឺជាអត្ថបទ។"],
   readAnother: ["Read another page", "អានទំព័រផ្សេងទៀត"],
+  // NOT DRAWN (Edit, 2026-11-20): our words, our Khmer draft
+  edit: ["Edit", "កែអត្ថបទ"],
+  done: ["Done", "រួចរាល់"],
+  editNote: ["Your edits live only in this page. Copy or download them to keep them.",
+    "ការកែរបស់អ្នក មាននៅតែក្នុងទំព័រនេះ។ សូមចម្លង ឬទាញយក ដើម្បីរក្សាទុកវា។"],
   // ── 5 · nothing found ──────────────────────────────────────────────────────────────────────────────────────────────
   nothingTitle: ["No lines of text found", "រកមិនឃើញបន្ទាត់អត្ថបទទេ"],
   nothingLede: ["The reader found no printed lines in this picture.", "ម៉ូដែលរកមិនឃើញបន្ទាត់អក្សរបោះពុម្ពក្នុងរូបនេះទេ។"],
@@ -167,6 +187,8 @@ const S = {
   cannotOpen: ["This file could not be opened.", "មិនអាចបើកឯកសារនេះបានទេ។"],
   cannotRead: ["The page could not be read. Try again.", "មិនអាចអានទំព័រនេះបានទេ។ សូមសាកល្បងម្តងទៀត។"],
   cannotCopy: ["Could not copy here.", "មិនអាចចម្លងនៅទីនេះបានទេ។"],
+  // NOT DRAWN (several pictures at once, 2026-11-20): our words, our Khmer draft
+  pdfAlone: ["A PDF is read on its own. Choose it by itself.", "PDF មួយត្រូវអានដាច់ដោយឡែក។ សូមជ្រើសវាតែមួយ។"],
   // NOT DRAWN: the keyboard's way to the dictionary (one selected word); our words, our Khmer draft
   meaning: ["Meaning", "ន័យ"],
   tooLong: ["Select a shorter passage to hear it.", "សូមជ្រើសអត្ថបទខ្លីជាងនេះ ដើម្បីស្តាប់។"],
@@ -177,6 +199,8 @@ const S = {
 } satisfies Record<string, readonly [string, string | null]>;
 
 export type Key = keyof typeof S;
+/** Every entry, in order: [English, our Khmer draft or null]. scripts/review-km.mjs prints them for a native reader's review. */
+export const ENTRIES: Readonly<Record<Key, readonly [string, string | null]>> = S;
 
 let lang: Lang = typeof document !== "undefined" && document.documentElement.lang === "km" ? "km" : "en";
 const subs = new Set<() => void>();

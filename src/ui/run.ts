@@ -1,11 +1,12 @@
-/** One page being read, or read: an image, or one page of a PDF. A range is a list of these, read in order. */
+/** One page being read, or read: an image, or one page of a PDF. A range (or several pictures) is a list of these, read in
+ *  order. */
 import { html, type TemplateResult } from "lit";
 import { t, num } from "../i18n";
-import { toRoman, type Page, type Line, type Leaf, type ReadResult } from "../read/index";
+import { toRoman, type Page, type Line, type Leaf, type Quad, type ReadResult } from "../read/index";
 import type { Box, Mark } from "./scan";
 
 export interface Run {
-  /** the PDF page number, or null for a picture */
+  /** the PDF page number, or a picture's place among several; null for a picture on its own */
   n: number | null;
   /** opens (or re-opens) the page for reading */
   get: () => Promise<Page>;
@@ -19,6 +20,13 @@ export interface Run {
   leafFound: boolean;
   /** the leaf the person chose with the switch, if any */
   want?: Leaf;
+  /** the reader judged the picture a photo or a screenshot: "Adjust this page" (state 1c) is offered */
+  photo?: boolean;
+  /** the corners the person set in state 1c, in the original picture's pixels (a re-opened page is cut there again) */
+  adjusted?: Quad;
+  /** the text as the person edited it (Edit), one line per printed line. In memory only, ⛔ never stored: the privacy page
+   *  promises that only the language, theme and reader choice are kept. A new reading of the page replaces it. */
+  edited?: string;
 }
 
 export function newRun(n: number | null, get: () => Promise<Page>, page: Page | null = null): Run {
@@ -26,6 +34,15 @@ export function newRun(n: number | null, get: () => Promise<Page>, page: Page | 
 }
 
 export const readLines = (r: Run): Line[] => r.lines.filter((l): l is Line => Boolean(l));
+
+/** The text shown for each line, by line index: the person's edit if there is one, else what was read (a line not read yet
+ *  is missing). The result, Copy, Download and a tapped word all read it here, so they always agree. */
+export const lineTexts = (r: Run): (string | undefined)[] =>
+  r.edited !== undefined ? r.edited.split("\n") : r.lines.map((l) => l?.text);
+
+/** The page's text as one string, as the Edit box starts it. */
+export const runText = (r: Run): string =>
+  r.edited !== undefined ? r.edited : readLines(r).map((l) => l.text).join("\n");
 
 /** The outline marks while reading: read · the one being read now · found. */
 export function readingMarks(r: Run): Mark[] {
@@ -40,12 +57,13 @@ export function textLang(leaf: Leaf | undefined, roman = false): string {
   return "und-Khmr";
 }
 
-/** The plain text of the runs, for Copy and Download: in a range, each page under its heading. */
+/** The plain text of the runs, for Copy and Download (the person's edits included): in a range, each page under its
+ *  heading. */
 export function plainText(runs: Run[], roman: boolean): string {
   const multi = runs.length > 1;
   return runs
     .map((r) => {
-      const body = readLines(r).map((l) => (roman && r.leaf === "pali" ? toRoman(l.text) : l.text)).join("\n");
+      const body = runText(r).split("\n").map((s) => (roman && r.leaf === "pali" ? toRoman(s) : s)).join("\n");
       return multi && r.n !== null ? `${t("pageN", { n: r.n })}\n${body}` : body;
     })
     .join("\n\n");

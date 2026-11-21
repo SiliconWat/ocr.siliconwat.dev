@@ -1,4 +1,6 @@
-/** State 1 — empty: drop a page, choose a file, take a photo; the privacy line; the reader picker (phone S1, computer D1). */
+/** State 1 — empty: drop a page, choose a file, take a photo; the privacy line; the reader picker (phone S1, computer D1).
+ *  Several pictures may be chosen, dropped or pasted at once (they are read in order, each under its page heading); every
+ *  file goes up to the app as one list (`files`), which sorts them and says when a PDF must be read on its own. */
 import { html } from "lit";
 import { Light } from "./base";
 import { t, langOf } from "../i18n";
@@ -23,8 +25,8 @@ export class OcrEmpty extends Light {
   }
 
   private onPaste = (e: ClipboardEvent) => {
-    const f = e.clipboardData?.files?.[0];
-    if (f) { e.preventDefault(); this.emit("file", f); }
+    const fs = [...(e.clipboardData?.files ?? [])];
+    if (fs.length) { e.preventDefault(); this.emit<File[]>("files", fs); }
   };
   connectedCallback() {
     super.connectedCallback();
@@ -41,15 +43,15 @@ export class OcrEmpty extends Light {
   }
   private picked(e: Event) {
     const input = e.target as HTMLInputElement;
-    const f = input.files?.[0];
+    const fs = [...(input.files ?? [])];
     input.value = "";
-    if (f) this.emit("file", f);
+    if (fs.length) this.emit<File[]>("files", fs);
   }
   private drop(e: DragEvent) {
     e.preventDefault();
     this.over = false;
-    const f = e.dataTransfer?.files?.[0];
-    if (f && !this.opening) this.emit("file", f);
+    const fs = [...(e.dataTransfer?.files ?? [])];
+    if (fs.length && !this.opening) this.emit<File[]>("files", fs);
   }
 
   private radio(id: ModelId, name: "accurate" | "public", sub: "accurateSub" | "publicSub", lic: string) {
@@ -85,7 +87,7 @@ export class OcrEmpty extends Light {
           </button>
           <button class="btn btn-ghost" ?disabled=${this.opening} @click=${() => this.pick("#pick-photo")}>${CAM()}${t("takePhoto")}</button>
         </div>
-        <input id="pick-file" type="file" hidden accept="image/*,application/pdf,.pdf" @change=${this.picked} />
+        <input id="pick-file" type="file" hidden multiple accept="image/*,application/pdf,.pdf" @change=${this.picked} />
         <input id="pick-photo" type="file" hidden accept="image/*" capture="environment" @change=${this.picked} />
         <div class="note flex items-start gap-10">${DEVICE()}<span>${t("privacy")}</span></div>
       </div>

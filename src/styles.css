@@ -212,7 +212,7 @@
   h3 {
     font-weight: var(--font-weight-strong);
   }
-  :where(ocr-app, ocr-empty, ocr-pages, ocr-progress, ocr-result, ocr-outcome, ocr-about, ocr-scan, ocr-dict, ocr-ask) {
+  :where(ocr-app, ocr-empty, ocr-pages, ocr-adjust, ocr-progress, ocr-result, ocr-outcome, ocr-about, ocr-scan, ocr-dict, ocr-ask) {
     display: block;
   }
   :focus-visible {
@@ -343,6 +343,17 @@
   .ocr .ln {
     @apply block;
   }
+  /* a line the person emptied while editing still takes its place (a zero-width space: never copied, never selected) */
+  .ocr .ln:empty::before {
+    content: "\200b";
+  }
+  /* Edit: the text box as a field, set like the text itself (17px, 20px on a computer: above the 16px floor) */
+  textarea.ocr {
+    @apply block w-full resize-none;
+  }
+  textarea.ocr:focus {
+    @apply border-accent outline-none;
+  }
   .ocr mark {
     @apply rounded-tap bg-accent px-3 py-1 text-accent-ink;
   }
@@ -448,6 +459,36 @@
   .box.faint {
     stroke: var(--mark-faint);
     stroke-dasharray: 4 3;
+  }
+  /* state 1c: the person's picture, sized from its aspect ratio (--ar, set through the CSSOM: the CSP refuses a style
+     attribute) so the whole of it fits the screen with the buttons below it (beside it on a computer) */
+  .adj {
+    aspect-ratio: var(--ar, 0.75);
+    width: min(100%, calc(max(240px, 100dvh - 380px) * var(--ar, 0.75)));
+    -webkit-touch-callout: none;
+  }
+  @media (width >= 1024px) {
+    .adj {
+      width: min(100%, calc(max(320px, 100dvh - 220px) * var(--ar, 0.75)));
+    }
+  }
+  /* outside the page shaded; the page's edge in the outline color over a white halo, readable on any photo */
+  .adj-shade {
+    fill: var(--color-l-scrim);
+  }
+  .adj-halo,
+  .adj-edge {
+    fill: none;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+  .adj-halo {
+    stroke: var(--color-knob);
+    stroke-width: 4px;
+  }
+  .adj-edge {
+    stroke: var(--mark);
+    stroke-width: 2px;
   }
   /* bottom sheets (<dialog>) */
   dialog.sheet {

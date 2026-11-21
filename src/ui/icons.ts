@@ -27,6 +27,9 @@ export const ASK = () => ic(svg`<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 
 export const EXT = () => ic(svg`<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>`);
 export const CAM = () => ic(svg`<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>`);
 export const FILE = () => ic(svg`<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>`);
+// NOT DRAWN (Edit, 2026-11-20): a pencil, and a check for Done, in the drawings' stroke style
+export const EDIT = () => ic(svg`<path d="M4 20h4L19 9a2.1 2.1 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>`);
+export const DONE = () => ic(svg`<path d="M5 12.5 10 17l9-10"/>`);
 export const DEVICE = () => ic(svg`<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>`, 18);
 export const TICK = () =>
   html`<svg class="mt-3 flex-none text-accent" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"

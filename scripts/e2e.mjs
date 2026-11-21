@@ -73,8 +73,11 @@ try {
         setTimeout(() => b(/^Read these pages$/).click(), 300); })()`);
     }
     let done = false;
+    let adjusted = false;
     while (!done && Date.now() - t0 < 600000) {
       await sleep(1500);
+      // a phone photo stops at "Adjust the page" (state 1c): accept the corners the reader found, as a person pressing Read would
+      if (!adjusted) adjusted = await evalIn(s, "(() => { const b = [...document.querySelectorAll('button')].find(x => /^\\s*Read this page\\s*$/.test(x.textContent)); if (b) { b.click(); return true; } return false; })()");
       done = await evalIn(s, "[...document.querySelectorAll('button')].some(b => /Read another page|Try another page/.test(b.textContent))");
     }
     const page = await evalIn(s, `({ lines: [...document.querySelectorAll('[data-line]')].map(e => e.textContent),
