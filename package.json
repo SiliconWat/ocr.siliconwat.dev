@@ -7,8 +7,8 @@
   "scripts": {
     "predev": "node scripts/vendor.mjs && node scripts/check-models.mjs --dev",
     "dev": "vite",
-    "build": "node scripts/vendor.mjs && node scripts/check-models.mjs && tsc --noEmit && vite build",
-    "build:dev": "node scripts/vendor.mjs && node scripts/check-models.mjs --dev && tsc --noEmit && vite build",
+    "build": "node scripts/vendor.mjs && node scripts/check-models.mjs && tsc --noEmit && vite build && node scripts/build-sw.mjs",
+    "build:dev": "node scripts/vendor.mjs && node scripts/check-models.mjs --dev && tsc --noEmit && vite build && node scripts/build-sw.mjs",
     "preview": "vite preview",
     "test": "tsx --test test/*.test.ts",
     "parity": "tsx scripts/parity.ts",

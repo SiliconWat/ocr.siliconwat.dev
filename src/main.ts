@@ -13,4 +13,12 @@ import "@fontsource/noto-serif-khmer/500.css";
 import "./styles.css";
 import "./ui/app";
 import { watchUncaught } from "./report";
+import { registerWorker, takeShared } from "./share";
 watchUncaught();
+registerWorker();
+// a picture shared from Android's share sheet: open it as if chosen
+takeShared().then(async (files) => {
+  if (!files.length) return;
+  await customElements.whenDefined("ocr-app");
+  (document.querySelector("ocr-app") as unknown as { onFiles(f: File[]): Promise<void> } | null)?.onFiles(files);
+});
