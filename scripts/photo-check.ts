@@ -9,13 +9,15 @@ import { lineBox, crop } from "../src/read/crop";
 import { preparePage } from "../src/read/page";
 
 const argv = process.argv.slice(2), opt = (k: string) => argv[argv.indexOf(k) + 1];
-const items: { file: string; kind: string; leaf: "pali" | "khmer" }[] = JSON.parse(readFileSync(argv[0], "utf8"));
+const items: { file: string; kind: string; leaf: "pali" | "khmer"; corners?: [number, number][] | null }[] = JSON.parse(readFileSync(argv[0], "utf8"));
+const trueCorners = argv.includes("--true-corners");   // the corners the synthetic picture was made with: is corner-finding the weak step?
 const w = await createWorker(opt("--model"), OEM.LSTM_ONLY, { langPath: new URL("../public/models", import.meta.url).pathname, gzip: false, cacheMethod: "none" },
   { load_system_dawg: "0", load_freq_dawg: "0" });
 await w.setParameters({ tessedit_pageseg_mode: PSM.RAW_LINE });
 const out: Record<string, { text: string; lines: number; photo: boolean; median: number }> = {};
 for (const it of items) {
-  const p = preparePage(fromPGM(readFileSync(it.file)), false) as ReturnType<typeof preparePage> & { photo?: boolean };
+  const opts = trueCorners && it.corners ? { corners: it.corners as never } : {};
+  const p = preparePage(fromPGM(readFileSync(it.file)), false, undefined, opts);
   const bands = textLines(p.line, { splitTall: it.leaf === "khmer" });
   const texts: string[] = [], conf: number[] = [];
   for (const [a, b] of bands) {

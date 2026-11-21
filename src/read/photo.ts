@@ -149,7 +149,17 @@ export function flatten(g: Gray): Gray {
   const bg = resize(boxBlur({ w: small.w, h: small.h, data: mx }, 3), g.w, g.h);
   const out = new Uint8Array(g.data.length);
   for (let i = 0; i < out.length; i++) out[i] = Math.min(255, Math.round((g.data[i] * 255) / Math.max(1, bg.data[i])));
+  // stretch, in two parts (the dev set, 2026-11-20: each part alone was better on some kinds and worse on others):
+  //  (a) always, mildly: the darkest 1% of pixels to black (the first version; best on ordinary photos);
+  //  (b) only for a FAINT print — the ink found as its OWN class (Otsu) has a mean above 90 — the ink to black. ⚠️ (a) alone took
+  //      paper for ink on a sparse faded page (ink under 1% of the pixels): nothing was stretched and NO lines were found.
   const sorted = Uint8Array.from(out).sort(), lo = sorted[Math.floor(0.01 * sorted.length)];
   if (lo > 0 && lo < 200) for (let i = 0; i < out.length; i++) out[i] = Math.max(0, Math.round(((out[i] - lo) * 255) / (255 - lo)));
-  return { w: g.w, h: g.h, data: out };
+  const norm: Gray = { w: g.w, h: g.h, data: out }, t = otsu(norm);
+  let inkSum = 0, inkN = 0; for (const v of out) if (v < t) { inkSum += v; inkN++; }
+  const ink = inkN ? inkSum / inkN : 0;
+  if (inkN && ink > 90 && 255 - ink > 40) {
+    for (let i = 0; i < out.length; i++) out[i] = Math.max(0, Math.min(255, Math.round(((out[i] - ink) * 255) / (255 - ink))));
+  }
+  return norm;
 }
