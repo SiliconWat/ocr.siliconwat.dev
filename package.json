@@ -12,7 +12,8 @@
     "preview": "vite preview",
     "test": "tsx --test test/*.test.ts",
     "parity": "tsx scripts/parity.ts",
-    "review-km": "tsx scripts/review-km.mjs"
+    "khmer-strings": "tsx scripts/khmer-strings.mjs",
+    "khmer-apply": "node scripts/khmer-apply.mjs"
   },
   "dependencies": {
     "@fontsource/ibm-plex-mono": "5.3.0",

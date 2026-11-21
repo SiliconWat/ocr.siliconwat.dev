@@ -40,7 +40,8 @@ npm run dev                 # local; add ?demo to the URL for a stand-in reader 
 npm run build               # REFUSES while a model is interim or missing (scripts/check-models.mjs)
 npm run build:dev           # the same build without that refusal, for local checks
 npm test                    # the dictionary, the error report, the two entries' heads and the starting language
-npm run review-km           # the Khmer review sheet for a native reader: staging/review-km.html (never in the build)
+npm run khmer-strings       # this site's words for the native readers' review (/khmer-review): staging/khmer-strings.json
+npm run khmer-apply <file>  # bring the approved Khmer the review pulled into src/i18n.ts (review the diff, then test)
 ```
 
 The checks that hold the reader to what was measured:
@@ -58,7 +59,8 @@ Each check was first seen to fail on a deliberately broken case. A check that ha
 ## What is not verified
 
 - **The Khmer copy is our own draft** until a native reader approves it, and the page says so. The credits, license and
-  privacy text stay in English until then.
+  privacy text stay in English until then. The native readers review it at `demo.siliconwat.dev/khmer/ocr.siliconwat.dev/`,
+  each from a private link; entries are kept at `translate.333.eco` and the latest one is used.
 - **Phone photos have not been measured.** Synthetic tilts were; perspective, curl and shadow were not.
 - **The "not this print" threshold is provisional** until it is calibrated on the final models.
 
