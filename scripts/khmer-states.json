@@ -124,6 +124,66 @@
    "settle": 2500
   },
   {
+   "id": "msg-not-a-file",
+   "url": "/?demo&state=1",
+   "ready": "ocr-app",
+   "eval": [
+    "document.querySelector('ocr-app').onFile(new File(['x'], 'notes.txt', { type: 'text/plain' }));"
+   ],
+   "until": "[...document.querySelectorAll('.opacity-100')].some(e => e.textContent.trim())",
+   "settle": 400
+  },
+  {
+   "id": "msg-cannot-open",
+   "url": "/?demo&state=1",
+   "ready": "ocr-app",
+   "eval": [
+    "document.querySelector('ocr-app').onFile(new File([new Uint8Array([1, 2, 3, 4])], 'page.jpg', { type: 'image/jpeg' }));"
+   ],
+   "until": "[...document.querySelectorAll('.opacity-100')].some(e => e.textContent.trim())",
+   "settle": 400
+  },
+  {
+   "id": "msg-pdf-alone",
+   "url": "/?demo&state=1",
+   "ready": "ocr-app",
+   "eval": [
+    "document.querySelector('ocr-app').onFiles([new File(['%PDF-1.4'], 'book.pdf', { type: 'application/pdf' }), new File(['x'], 'page.jpg', { type: 'image/jpeg' })]);"
+   ],
+   "until": "[...document.querySelectorAll('.opacity-100')].some(e => e.textContent.trim())",
+   "settle": 400
+  },
+  {
+   "id": "msg-link",
+   "url": "/?demo&state=1",
+   "ready": "ocr-app",
+   "eval": [
+    "__click('ចែករំលែក');"
+   ],
+   "until": "[...document.querySelectorAll('.opacity-100')].some(e => e.textContent.trim())",
+   "settle": 400
+  },
+  {
+   "id": "msg-copied",
+   "url": "/?demo&state=4",
+   "ready": "ocr-app",
+   "until": "!!document.querySelector('ocr-result [data-line]')",
+   "eval": [
+    "for (let i = 0; i < 80 && !(!!document.querySelector('ocr-result [data-line]')); i++) await new Promise(r => setTimeout(r, 250)); __click('ចម្លង', 'button');"
+   ],
+   "settle": 400
+  },
+  {
+   "id": "msg-copied-paste",
+   "url": "/?demo&state=10",
+   "ready": "ocr-app",
+   "eval": [
+    "for (let i = 0; i < 80 && !(!!document.querySelector('ocr-result [data-line]')); i++) await new Promise(r => setTimeout(r, 250)); await new Promise(r => setTimeout(r, 1500)); __click('ចម្លង', 'button');"
+   ],
+   "until": "[...document.querySelectorAll('.opacity-100')].some(e => e.textContent.trim())",
+   "settle": 400
+  },
+  {
    "id": "terms",
    "url": "/?demo#terms",
    "ready": "ocr-app"
