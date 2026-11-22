@@ -133,5 +133,10 @@
    "url": "/?demo&state=1&theme=dark",
    "ready": "ocr-app"
   }
- ]
+ ],
+ "stamp": {
+  "register": "M-0025",
+  "rights": "reserved",
+  "disclosure": "https://demo.siliconwat.dev/khmer/ocr.siliconwat.dev/"
+ }
 }
