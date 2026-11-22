@@ -13,7 +13,8 @@
     "test": "tsx --test test/*.test.ts",
     "parity": "tsx scripts/parity.ts",
     "khmer-strings": "tsx scripts/khmer-strings.mjs",
-    "khmer-apply": "node scripts/khmer-apply.mjs"
+    "khmer-apply": "node scripts/khmer-apply.mjs",
+    "khmer-capture": "node scripts/khmer-capture.mjs"
   },
   "dependencies": {
     "@fontsource/ibm-plex-mono": "5.3.0",

@@ -1,0 +1,137 @@
+{
+ "about": "The screens the Khmer review's screenshots are taken from (/khmer-review capture). The demo mode's states (src/ui/demo.ts), in Khmer, most typical first: the FIRST screen that shows an entry keeps it.",
+ "base": "http://localhost:4319",
+ "viewport": {
+  "width": 390,
+  "height": 844
+ },
+ "query": "lang=km",
+ "states": [
+  {
+   "id": "empty",
+   "url": "/?demo&state=1",
+   "ready": "ocr-app"
+  },
+  {
+   "id": "result",
+   "url": "/?demo&state=4",
+   "ready": "ocr-app",
+   "until": "!!document.querySelector('ocr-result [data-line]')",
+   "settle": 2500
+  },
+  {
+   "id": "reading",
+   "url": "/?demo&state=3",
+   "ready": "ocr-app",
+   "settle": 6000
+  },
+  {
+   "id": "first-use",
+   "url": "/?demo&state=2",
+   "ready": "ocr-app",
+   "settle": 6000
+  },
+  {
+   "id": "pdf-pages",
+   "url": "/?demo&state=1b",
+   "ready": "ocr-app",
+   "settle": 6000
+  },
+  {
+   "id": "adjust",
+   "url": "/?demo&state=1c&photo",
+   "ready": "ocr-app",
+   "settle": 6000
+  },
+  {
+   "id": "roman",
+   "url": "/?demo&state=4r",
+   "ready": "ocr-app",
+   "until": "!!document.querySelector('ocr-result [data-line]')",
+   "settle": 2500
+  },
+  {
+   "id": "range",
+   "url": "/?demo&state=4p",
+   "ready": "ocr-app",
+   "until": "!!document.querySelector('ocr-result [data-line]')",
+   "settle": 2500
+  },
+  {
+   "id": "batch",
+   "url": "/?demo&state=4b&photo",
+   "ready": "ocr-app",
+   "until": "!!document.querySelector('ocr-result [data-line]')",
+   "settle": 2500
+  },
+  {
+   "id": "edit",
+   "url": "/?demo&state=4e",
+   "ready": "ocr-app",
+   "until": "!!document.querySelector('ocr-result textarea, ocr-result [contenteditable]')",
+   "settle": 2500
+  },
+  {
+   "id": "nothing",
+   "url": "/?demo&state=5",
+   "ready": "ocr-app",
+   "settle": 6000
+  },
+  {
+   "id": "not-this-print",
+   "url": "/?demo&state=6",
+   "ready": "ocr-app",
+   "settle": 6000
+  },
+  {
+   "id": "about",
+   "url": "/?demo&state=7",
+   "ready": "ocr-app"
+  },
+  {
+   "id": "word",
+   "url": "/?demo&state=8",
+   "ready": "ocr-app",
+   "until": "!!document.querySelector('ocr-result [data-line]')",
+   "settle": 2500
+  },
+  {
+   "id": "no-word",
+   "url": "/?demo&state=8n",
+   "ready": "ocr-app",
+   "until": "!!document.querySelector('ocr-result [data-line]')",
+   "settle": 2500
+  },
+  {
+   "id": "passage",
+   "url": "/?demo&state=9",
+   "ready": "ocr-app",
+   "until": "!!document.querySelector('ocr-result [data-line]')",
+   "settle": 2500
+  },
+  {
+   "id": "listen",
+   "url": "/?demo&state=9&voice",
+   "ready": "ocr-app",
+   "until": "!!document.querySelector('ocr-result [data-line]')",
+   "settle": 2500
+  },
+  {
+   "id": "ask",
+   "url": "/?demo&state=10",
+   "ready": "ocr-app",
+   "until": "!!document.querySelector('ocr-result [data-line]')",
+   "settle": 2500
+  },
+  {
+   "id": "terms",
+   "url": "/?demo#terms",
+   "ready": "ocr-app"
+  },
+  {
+   "id": "dark",
+   "url": "/?demo&state=1&theme=dark",
+   "ready": "ocr-app"
+  }
+ ]
+}

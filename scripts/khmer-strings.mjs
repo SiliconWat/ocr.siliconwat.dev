@@ -48,19 +48,7 @@ W("Waiting · Privacy and terms (shown in English until translated)", [
   ["x.contact", CONTACT],
 ]);
 
-// Where each group's words appear: the drawing of that screen on demo.siliconwat.dev (canvas.json lists every board), matched by
-// the screen number the group name and the board title share ("1b · …"). No board → no link (1c, the toasts, the terms page).
-const CANVAS = join(ROOT, "..", "demo.siliconwat.dev", "canvas.json");
-let boards = [];
-try { boards = JSON.parse(readFileSync(CANVAS, "utf8")).artboards; } catch { console.warn("no demo.siliconwat.dev/canvas.json beside this repo: the sheet will have no drawing links"); }
-const SAME_AS = { "header, footer, band": "1", "Waiting · About and credits (shown in English until translated)": "7" };
-for (const g of groups) {
-  const screen = SAME_AS[g.name] ?? g.name.match(/^(\w+) · /)?.[1];
-  if (!screen) continue;
-  const pick = (lang) => boards.find((b) => b.title.startsWith(`${screen} · `) && b.title.endsWith(`, ${lang}, phone`) && !/dark pass/.test(b.title));
-  const context = [["km", pick("Khmer")], ["en", pick("English")]].filter(([, b]) => b).map(([lang, b]) => ({ url: "/" + b.file, lang, kind: "drawing" }));
-  if (context.length) g.context = context;
-}
+// Where each entry appears is shown by its SCREENSHOT (npm run khmer-capture; founder 2026-11-21: "no drawings, just screenshots").
 
 let commit = null;
 try { commit = execFileSync("git", ["rev-parse", "--short", "HEAD"], { cwd: ROOT, encoding: "utf8" }).trim(); } catch {}
@@ -78,4 +66,4 @@ const sheet = {
 mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, JSON.stringify(sheet, null, 1) + "\n");
 const n = groups.reduce((a, g) => a + g.entries.length, 0);
-console.log(`wrote ${OUT}: ${n} entries (${keys.length} from src/i18n.ts, ${n - keys.length} waiting) in ${groups.length} groups, ${groups.filter((g) => g.context).length} with a drawing`);
+console.log(`wrote ${OUT}: ${n} entries (${keys.length} from src/i18n.ts, ${n - keys.length} waiting) in ${groups.length} groups`);
