@@ -48,6 +48,29 @@ W("Waiting · Privacy and terms (shown in English until translated)", [
   ["x.contact", CONTACT],
 ]);
 
+// The group names in Khmer, for the review page's Khmer side (our draft, like the page's own words): by the section's English name.
+const GROUP_KM = {
+  "header, footer, band": "ក្បាលទំព័រ បាតទំព័រ និងបន្ទះព័ត៌មាន",
+  "1 · empty": "1 · ទំព័រដើម មុនពេលជ្រើសរើសទំព័រ",
+  "1b · PDF page chooser": "1b · ការជ្រើសរើសទំព័រ PDF",
+  "1c · adjust the page (a photo or a screenshot)": "1c · កែតម្រូវទំព័រ (រូបថត ឬរូបថតអេក្រង់)",
+  "2 · first use": "2 · ការប្រើលើកដំបូង",
+  "3 · reading": "3 · កំពុងអាន",
+  "4 · result": "4 · លទ្ធផល",
+  "5 · nothing found": "5 · រកមិនឃើញបន្ទាត់",
+  "6 · not this print": "6 · មិនមែនជាការបោះពុម្ពនេះ",
+  "7 · about and credits": "7 · អំពី និងការទទួលស្គាល់",
+  "8 · a word's entry": "8 · ពាក្យមួយក្នុងវចនានុក្រម",
+  "9 · a passage selected": "9 · អត្ថបទដែលបានជ្រើសរើស",
+  "10 · ask": "10 · សួរ",
+  "toasts and problems: NOT DRAWN": "សារខ្លីៗ និងបញ្ហា",
+  "Waiting · About and credits (shown in English until translated)": "កំពុងរង់ចាំ · អំពី និងការទទួលស្គាល់ (បង្ហាញជាភាសាអង់គ្លេស រហូតដល់មានការបកប្រែ)",
+  "Waiting · Privacy and terms (shown in English until translated)": "កំពុងរង់ចាំ · ឯកជនភាព និងលក្ខខណ្ឌ (បង្ហាញជាភាសាអង់គ្លេស រហូតដល់មានការបកប្រែ)",
+};
+for (const g of groups) if (GROUP_KM[g.name]) g.name_km = GROUP_KM[g.name];
+const missingKm = groups.filter((g) => !g.name_km).map((g) => g.name);
+if (missingKm.length) console.warn(`khmer-strings: no Khmer name for group(s): ${missingKm.join(" | ")} — add them to GROUP_KM`);
+
 // Where each entry appears is shown by its SCREENSHOT (npm run khmer-capture; founder 2026-11-21: "no drawings, just screenshots").
 
 let commit = null;
@@ -58,6 +81,7 @@ const sheet = {
   surface: "ocr.siliconwat.dev",
   title: "ocr.siliconwat.dev",
   about: "The free page that reads printed pages of the Buddhist Institute Tipiṭaka (Pāli and Khmer) in a visitor's own browser.",
+  about_km: "ទំព័រឥតគិតថ្លៃ ដែលអានទំព័របោះពុម្ពនៃព្រះត្រៃបិដក វិទ្យាស្ថានពុទ្ធសាសនបណ្ឌិត្យ (បាលី និងខ្មែរ) នៅក្នុងកម្មវិធីរុករករបស់អ្នកផ្ទាល់។",
   accent: "#c2410c",
   made: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`,
   commit,
