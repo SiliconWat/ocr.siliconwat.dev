@@ -179,7 +179,9 @@ export const reader: Reader = {
       }
     }
     hooks?.onLeaf?.(leaf);
-    const bands = leaf === "khmer" ? textLines(px.line, { splitTall: true }) : plain;   // Khmer: touching lines are split
+    // Touching lines are split on BOTH leaves (pilot 5's PIPE-S, tipitaka-khmer pilot/ocr5-draft, FIT 2026-11-23: the print's
+    // Pāli unchanged at 1.71%, Taiwan's Pāli 5.96% → 2.53%, heavy-bold commentary pages 13–17% → 3.7–6.5%; scripts/parity.ts --split)
+    const bands = textLines(px.line, { splitTall: true });
     const boxes = boxesOf(bands), file = fileFor(opts.model, leaf);
     hooks?.onFound?.(boxes);
     const lines: Line[] = [];

@@ -5,7 +5,8 @@
  *       in pilot 1's format, so the Python scorer scores it exactly as it scored pilot 3.
  *  Part 3 (spec §acceptance): --single r300|app hands the page over as ONE image (the 300-dpi scan, or the app image as
  *  bedok publishes it) and prepares it with src/read/page.ts — exactly what a visitor's browser does with an image.
- *  Usage: tsx scripts/parity.ts <parity-dir> [--leaf pali|khmer] [--single r300|app] [--read <model> --models <dir> --out <dir>] [--workers 2]
+ *  --split (2026-11-23, pilot 5's PIPE-S): touching lines split on every leaf, as src/read/reader.ts now reads.
+ *  Usage: tsx scripts/parity.ts <parity-dir> [--leaf pali|khmer] [--split] [--single r300|app] [--read <model> --models <dir> --out <dir>] [--workers 2]
  *  No data is kept in this repo. */
 import { readFileSync, readdirSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -17,7 +18,7 @@ import { preparePage } from "../src/read/page";
 
 const argv = process.argv.slice(2);
 const opt = (k: string, d?: string) => (argv.includes(k) ? argv[argv.indexOf(k) + 1] : d);
-const dir = argv[0], leaf = opt("--leaf", "pali")!, model = opt("--read"), workers = +opt("--workers", "2")!, single = opt("--single");
+const dir = argv[0], leaf = opt("--leaf", "pali")!, split = argv.includes("--split"), model = opt("--read"), workers = +opt("--workers", "2")!, single = opt("--single");
 const pages = readdirSync(dir).filter((f) => f.endsWith(".json")).sort();
 
 let bandBad = 0, boxBad = 0, lines = 0;
@@ -29,14 +30,14 @@ for (const f of pages) {
   const r300 = fromPGM(readFileSync(join(dir, stem + ".r300.pgm")));
   if (single) {   // part 3: one image, prepared as the browser prepares an image
     const p = preparePage(single === "app" ? app : r300, false);
-    const bands = textLines(p.line, { splitTall: leaf === "khmer" });
+    const bands = textLines(p.line, { splitTall: split || leaf === "khmer" });
     if (bands.length !== ref.bands.length) { bandBad++; console.log(`LINE COUNT differs ${stem}: ${bands.length} vs Python ${ref.bands.length}${p.turned ? ` (turned ${p.tilt}°)` : ""}`); }
     lines += bands.length;
     const boxes = bands.map(([a, b]) => lineBox(p.line, a, b, p.crop.w / p.line.w, [p.crop.w, p.crop.h]));
     if (model) jobs.push({ stem, crops: boxes.map((bx) => toPGM(crop(p.crop, bx))) });
     continue;
   }
-  const bands = textLines(app, { splitTall: leaf === "khmer" });
+  const bands = textLines(app, { splitTall: split || leaf === "khmer" });
   if (JSON.stringify(bands) !== JSON.stringify(ref.bands)) {
     bandBad++; console.log(`BANDS differ ${stem}: js ${bands.length} vs py ${ref.bands.length}`);
   }

@@ -54,7 +54,7 @@ export function textLines(g: Gray, { gap = 6, frag = 0.15, splitTall = false }: 
   });
   out.sort((x, y) => x[0] - y[0] || x[1] - y[1] || x[2] - y[2]);
   const res: [number, number][] = out.map((l) => [l[0], l[1]]);
-  if (splitTall) {   // the Khmer leaf: stacked vowels make two lines touch; split a band > 1.6 × the median height
+  if (splitTall) {   // stacked vowels and tall forms make two lines touch (the Khmer leaf; Pāli too since pilot 5's PIPE-S); split a band > 1.6 × the median height
     const hs = res.map(([a, b]) => b - a).sort((x, y) => x - y);
     const medH = hs.length ? hs[Math.floor(hs.length / 2)] : 0;
     let again = true;
