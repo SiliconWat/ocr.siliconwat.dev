@@ -1,7 +1,6 @@
 node_modules/
 dist/
-# the reader models: released on Hugging Face and copied in at launch (A64), never committed before then
-public/models/
+# (the reader models are committed since the launch, 2026-11-23: the same bytes as the public Hugging Face repos)
 # tesseract.js worker + core and pdf.js, copied from node_modules by scripts/vendor.mjs
 public/vendor/
 .DS_Store

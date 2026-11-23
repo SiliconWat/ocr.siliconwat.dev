@@ -2,8 +2,8 @@ name: Deploy to GitHub Pages
 
 # Builds the site and deploys it to GitHub Pages. Adapted from brand.333.eco's workflow (its CNAME and re-run lessons kept).
 #
-# ⏳ BEFORE LAUNCH IT RUNS ONLY BY HAND (workflow_dispatch): the repo is private until launch, a private repo pays for Actions
-# minutes, and Pages cannot publish from it on this plan. AT LAUNCH (A64, the same day the Hugging Face models go public):
+# ✅ LAUNCHED 2026-11-23 (founder: "go"): the repo public, Pages from Actions, a push to main deploys, the ocr CNAME set. What the
+# launch did, in order (A64, the same day the Hugging Face models went public):
 #   1. commit the released models into public/models/ (drop that line from .gitignore) and mark none interim in
 #      src/read/models.ts — `npm run build` runs scripts/check-models.mjs and REFUSES otherwise;
 #   2. make the repo public; Settings → Pages → Source → "GitHub Actions";
@@ -14,6 +14,8 @@ name: Deploy to GitHub Pages
 # Re-run safety: a stale "github-pages" artifact is deleted first, so a re-run never aborts on two.
 
 on:
+    push:
+        branches: [main]
     workflow_dispatch:
 
 permissions:
