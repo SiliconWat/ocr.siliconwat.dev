@@ -17,6 +17,8 @@ const S = {
   aboutLink: ["About and credits", "អំពី និងការទទួលស្គាល់"],
   // NOT DRAWN (legal D9, 2026-11-20): our words, our Khmer draft; the page itself stays English
   termsLink: ["Privacy and terms", "ឯកជនភាព និងលក្ខខណ្ឌ"],
+  // NOT DRAWN (founder 2026-11-23: a footer link to the models on Hugging Face): our words, our Khmer draft
+  modelsLink: ["Models and data", "ម៉ូដែល និងទិន្នន័យ"],
   visits: ["Visits are counted without cookies.", "ការចូលមើលត្រូវបានរាប់ដោយគ្មានខូគី។"],
   system: ["System", "ប្រព័ន្ធ"],
   light: ["Light", "ភ្លឺ"],

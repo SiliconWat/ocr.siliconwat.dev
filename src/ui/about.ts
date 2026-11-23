@@ -5,7 +5,7 @@ import { html } from "lit";
 import { Light } from "./base";
 import { t, getLang } from "../i18n";
 import { siteIcon, spot } from "./icons";
-import { CREDITS, LICENSES, PRIVACY } from "./english-only";
+import { CREDITS, LICENSES, PRIVACY, RELEASES } from "./english-only";
 
 /** ℠ set small, as the drawings set it */
 const sm = (s: string) => {
@@ -14,6 +14,11 @@ const sm = (s: string) => {
 };
 
 export class OcrAbout extends Light {
+  /** The footer's "Models and data" (#models) opens About at the readers' links. */
+  firstUpdated() {
+    if (location.hash === "#models") this.querySelector("#models")?.scrollIntoView({ block: "start" });
+  }
+
   render() {
     const km = getLang() === "km";
     return html`<div class="mx-auto max-w-640">
@@ -24,7 +29,9 @@ export class OcrAbout extends Light {
       <div class="note">${t("checkWhat")}</div>
       ${km ? html`<p class="fine mt-0 mb-12">${t("staysEnglish")}</p>` : ""}
       <div class="card">${spot("device")}<h2>${t("privacyHead")}</h2><p lang="en">${PRIVACY}</p></div>
-      <div class="card">${spot("file")}<h2>${t("twoReaders")}</h2><p lang="en">${LICENSES}</p></div>
+      <div class="card" id="models">${spot("file")}<h2>${t("twoReaders")}</h2><p lang="en">${LICENSES}</p>
+        <ul class="m-0 list-none p-0 text-tool" lang="en">${RELEASES.map(([k, u]) => html`<li class="border-t border-line py-8 first:border-t-0">
+          <a href=${u} target="_blank" rel="noopener" class="underline underline-offset-2">${k}</a> <span class="text-ink-dim">· Hugging Face</span></li>`)}</ul></div>
       <p class="sh">${t("credits")}</p>
       <div class="card" lang="en">
         <ul class="m-0 list-none p-0 text-tool">
