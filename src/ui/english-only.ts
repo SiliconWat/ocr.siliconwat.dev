@@ -22,7 +22,7 @@ export const CREDITS: [string, string][] = [
   ["Transcription", "Se Mong Ly (លី ម៉ុង សែ)"],
   ["Text", "the Buddhist Institute edition of the Tipiṭaka (Phnom Penh, 1927–69)"],
   ["Scans", "Upāsikā Kang Huychan and family · Lok Kru Aggapaṇḍita But Savong · Srong Chanda · 5000-years.org, given as dhamma dāna"],
-  ["Made by", "Silicon Wat℠, with Miss Aquarius℠ (AI collaboration, disclosed)"],
+  ["Made by", "Silicon Wat ℠, with Miss Aquarius℠ (AI collaboration, disclosed)"],
 ];
 
 /** Privacy and terms (#terms): legal D9's draft. */
@@ -30,7 +30,7 @@ export const TERMS_DRAFT = "Draft of 20 November 2026. Not yet reviewed by a law
 
 export const TERMS: [string, string[]][] = [
   ["Who runs this page", [
-    "ocr.siliconwat.dev is run by Thon Ly, personally, until Silicon Wat℠ has a legal entity of its own. It is free, it has no accounts, and nothing is sold here.",
+    "ocr.siliconwat.dev is run by Thon Ly, personally, until Silicon Wat ℠ has a legal entity of its own. It is free, it has no accounts, and nothing is sold here.",
   ]],
   ["Privacy: what never leaves your device", [
     "The pages you give it, as images or PDFs, are read in your own browser and are never uploaded. The page is built so that it cannot send them: its Content-Security-Policy lets it contact only this site, the visit counter below, and the voice service, and only when you ask.",

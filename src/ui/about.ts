@@ -1,6 +1,6 @@
 /** State 7 — About and credits (#about). The privacy, license and credits text stays ENGLISH in Khmer mode until a native
  *  reader approves a translation (the license and credits never ship in unreviewed Khmer); the drawing's one Khmer line
- *  says so. Silicon Wat℠ surface: no heart, no B-Emblem. */
+ *  says so. Silicon Wat ℠ surface: no heart, no B-Emblem. */
 import { html } from "lit";
 import { Light } from "./base";
 import { t, getLang } from "../i18n";

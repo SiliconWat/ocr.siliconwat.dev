@@ -176,7 +176,7 @@ const S = {
   opensNewTab: ["Opens in a new tab", "បើកក្នុងផ្ទាំងថ្មី"],
   // NOT DRAWN (bedok.siliconwat.org's way: copy, then open): our words, our Khmer draft
   copyThenOpen: ["Ask copies the passage and your question, then opens the assistant. Paste them there.", "សួរ ចម្លងអត្ថបទ និងសំណួររបស់អ្នក រួចបើកជំនួយការ។ សូមបិទភ្ជាប់នៅទីនោះ។"],
-  fromSiliconWat: ["From Silicon Wat℠", "ពី Silicon Wat℠"],
+  fromSiliconWat: ["From Silicon Wat ℠", "ពី Silicon Wat ℠"],
   askCaution: ["AI assistants may assume a different edition's wording. Check what it says against the print.",
     "ជំនួយការ AI អាចសន្មតយកពាក្យពេចន៍នៃការបោះពុម្ពផ្សេង។ សូមផ្ទៀងផ្ទាត់អ្វីដែលវានិយាយ ជាមួយសៀវភៅបោះពុម្ព។"],
   ask: ["Ask", "សួរ"],

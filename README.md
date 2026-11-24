@@ -68,6 +68,6 @@ Each check was first seen to fail on a deliberately broken case. A check that ha
 
 Transcription: Se Mong Ly (លី ម៉ុង សែ). Text: the Buddhist Institute edition of the Tipiṭaka. Scans: Upāsikā Kang Huychan and
 family · Lok Kru Aggapaṇḍita But Savong · Srong Chanda · 5000-years.org, given as dhamma dāna. Dictionary: Samdech Chuon
-Nath. Made by Silicon Wat℠, with Miss Aquarius℠ (AI collaboration, disclosed).
+Nath. Made by Silicon Wat ℠, with Miss Aquarius℠ (AI collaboration, disclosed).
 
 Where this file and the project's own records disagree, the records are canonical. The design follows a private spec.
