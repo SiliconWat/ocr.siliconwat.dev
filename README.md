@@ -25,6 +25,7 @@ Ask copies the passage; nothing is sent. Error reports carry no Khmer script at 
 | `src/read/` | The reader. `lines.ts` finds printed lines, `crop.ts` cuts each one out, `page.ts` prepares a page (straightened if tilted, `deskew.ts`), `reader.ts` runs tesseract.js and pdf.js, `leaf.ts` tells Pāli from Khmer, `roman.ts` gives roman letters, `models.ts` names the model files. |
 | `src/dict/` | One-tap lookup in Chuon Nath's dictionary. The data is in `public/dict/`, one file per first letter, built by `scripts/build-dict.mjs` from khmer.siliconwat.dev's published copy. |
 | `src/ui/` | The screens (Lit, light DOM, Tailwind fed by the drawing's tokens in `src/styles.css`). Words, English and Khmer, are in `src/i18n.ts`; the texts that stay English until a Khmer translation is approved are in `src/ui/english-only.ts`. |
+| `legal/terms.md` | The Privacy and terms page's words, its ONE source. legal.333.eco publishes every version of it, timestamped, once its words are found on this page. `scripts/gen-legal.mjs` makes `src/ui/legal-terms.ts` from it (`npm run legal`); the build refuses a stale one, and `test/legal.test.ts` fails when the page drops or changes a line. `npm run legal-check -- <url>…` checks a served page in real Chrome. The build also writes the static page `/terms/` (`scripts/build-terms-page.ts`): the same terms in the site's frame with no app script, so a plain fetch finds every line (legal.333.eco's release reads it that way); the build refuses a page that lacks one. |
 | `km/index.html` | The Khmer entry, `/km/` (the Khmer share link): `index.html`'s head with Khmer title, description and picture. Its CSP must stay byte for byte the same as `index.html`'s; `test/pages.test.ts` fails if it does not. |
 | `src/listen.ts` · `src/ask.ts` · `src/report.ts` | Listen · Ask · error reports. |
 | `public/models/` | The reader models: not in git before launch; copied in by `scripts/models.mjs`. |
@@ -39,7 +40,8 @@ npm run dev                 # local; add ?demo to the URL for a stand-in reader 
                             #   &photo makes it read a photo, for "Adjust the page"; src/ui/demo.ts lists the states)
 npm run build               # REFUSES while a model is interim or missing (scripts/check-models.mjs)
 npm run build:dev           # the same build without that refusal, for local checks
-npm test                    # the dictionary, the error report, the two entries' heads and the starting language
+npm test                    # the dictionary, the error report, the two entries' heads, the starting language, and the terms page
+                            #   against legal/terms.md
 npm run khmer-strings       # this site's words for the native readers' review (/khmer-review): staging/khmer-strings.json
 npm run khmer-apply <file>  # bring the approved Khmer the review pulled into src/i18n.ts (review the diff, then test)
 ```
