@@ -130,20 +130,23 @@ const S = {
   tryAnother: ["Try another page", "សាកល្បងទំព័រផ្សេង"],
   // ── 6 · not this print ─────────────────────────────────────────────────────────────────────────────────────────────
   otherTitle: ["This may not be the print it knows", "នេះប្រហែលមិនមែនជាអក្សរបោះពុម្ពដែលវាស្គាល់ទេ"],
-  otherLede: ["The reader was trained on one edition's typeface, the Buddhist Institute's Tipiṭaka (1927–69), and reads other prints poorly.",
-    "ម៉ូដែលនេះត្រូវបានបង្ហាត់លើពុម្ពអក្សរនៃការបោះពុម្ពតែមួយ គឺព្រះត្រៃបិដករបស់ពុទ្ធសាសនបណ្ឌិត្យ (១៩២៧–១៩៦៩) ហើយអានការបោះពុម្ពផ្សេងៗបានមិនល្អទេ។"],
+  // re-worded 2026-11-25 with pilot 5 (the readers now read other printings, and the flag is a forecast of a bad read); our Khmer, a draft
+  otherLede: ["It read this page with low confidence, so what it read is likely to have many mistakes. The readers know the Buddhist Institute's Tipiṭaka (1927–69) best.",
+    "វាអានទំព័រនេះដោយទំនុកចិត្តទាប ដូច្នេះអ្វីដែលវាអាន ទំនងជាមានកំហុសច្រើន។ ម៉ូដែលទាំងនេះស្គាល់ព្រះត្រៃបិដករបស់ពុទ្ធសាសនបណ្ឌិត្យ (១៩២៧–១៩៦៩) ច្បាស់ជាងគេ។"],
   showAnyway: ["Show what it read anyway", "បង្ហាញអ្វីដែលវាបានអាន"],
   // ── 7 · about and credits ──────────────────────────────────────────────────────────────────────────────────────────
   aboutTitle: ["About and credits", "អំពី និងការទទួលស្គាល់"],
   whatReadsLong: ["Pāli and Khmer printed in Khmer script: both pages of each opening of the Buddhist Institute edition of the Tipiṭaka (Phnom Penh, 1927–69). It tells which one a page is, and you can switch it.",
     "បាលី និងខ្មែរ ដែលបោះពុម្ពជាអក្សរខ្មែរ៖ ទំព័រទាំងពីរនៃការបើកនីមួយៗ នៃព្រះត្រៃបិដកបោះពុម្ពរបស់ពុទ្ធសាសនបណ្ឌិត្យ (ភ្នំពេញ ១៩២៧–១៩៦៩)។ វាដឹងថាទំព័រនីមួយៗជាភាសាណា ហើយអ្នកអាចប្តូរវាបាន។"],
   howWell: ["How well it reads", "វាអានបានល្អប៉ុណ្ណា"],
-  // updated 2026-11-20 from the drawings' S7 to the measured figures (OCR pilot 4's readers, read in Chrome from PDFs of the
-  // edition, 80 + 80 test pages never used in training; scratchpad e2e, recorded in the spec); our Khmer, a draft
-  howWell1: ["On pages the models never saw, read here from PDFs of the edition, Most accurate got 1.6% of characters wrong on Pāli pages and 1.2% on Khmer pages; Public domain 2.1% and 2.2%.",
-    "លើទំព័រដែលម៉ូដែលមិនធ្លាប់ឃើញ (អានពី PDF នៃការបោះពុម្ព) ត្រឹមត្រូវបំផុត ខុស ១,៦% នៃតួអក្សរ លើទំព័របាលី និង ១,២% លើទំព័រខ្មែរ ហើយ កម្មសិទ្ធិសាធារណៈ ខុស ២,១% និង ២,២%។"],
-  howWell2: ["It was trained on one edition's typeface and learned from one transcriber's typing, including some of their habits. The Vinaya volumes read least well, and photos from a phone have not been measured yet.",
-    "វាត្រូវបានបង្ហាត់លើពុម្ពអក្សរនៃការបោះពុម្ពតែមួយ ហើយរៀនពីការវាយអក្សររបស់អ្នកចម្លងម្នាក់ រួមទាំងទម្លាប់ខ្លះរបស់គាត់។ ភាគវិន័យអានបានខ្សោយជាងគេ ហើយរូបថតពីទូរសព្ទមិនទាន់ត្រូវបានវាស់វែងនៅឡើយទេ។"],
+  // updated 2026-11-25 to OCR pilot 5's registered figures (median page, characters wrong, the compact models the site loads, pages
+  // never used in training; the scorer renders each PDF page itself: SW/tipitaka-khmer pilot/ocr5-2026-11-23/RESULTS.md). Read
+  // HERE from a 300-dpi image (scripts/confidence.ts, 80 + 80 edition pages) the edition comes out a little worse, for every model
+  // alike: A5 1.9% · 1.0% (pilot 4's A 2.0% · 1.2%), B 2.3% · 2.4%. Our Khmer, a draft
+  howWell1: ["In a test written down before training, on pages the models never saw, Most accurate got 1.4% of characters wrong on the edition's Pāli pages and 1.0% on its Khmer pages, 1.1% and 1.3% on a re-setting of it typed in Taiwan (2009–14), 2.3% on printed Pāli commentaries, and 1.2% on a 2009 Khmer printing. Public domain: 2.1% and 2.2% on the edition, 7.4% and 10.1% on the Taiwan re-setting, 9.3% on the commentaries, 5.9% on the 2009 printing.",
+    "ក្នុងការសាកល្បងដែលបានសរសេរទុកមុនការបង្ហាត់ លើទំព័រដែលម៉ូដែលមិនធ្លាប់ឃើញ ត្រឹមត្រូវបំផុត ខុស ១,៤% នៃតួអក្សរ លើទំព័របាលីនៃការបោះពុម្ព និង ១,០% លើទំព័រខ្មែររបស់វា, ១,១% និង ១,៣% លើការបោះពុម្ពដែលវាយអក្សរឡើងវិញនៅតៃវ៉ាន់ (២០០៩–២០១៤), ២,៣% លើអដ្ឋកថាបាលីដែលបោះពុម្ព និង ១,២% លើការបោះពុម្ពខ្មែរឆ្នាំ ២០០៩។ កម្មសិទ្ធិសាធារណៈ៖ ២,១% និង ២,២% លើការបោះពុម្ព, ៧,៤% និង ១០,១% លើការបោះពុម្ពនៅតៃវ៉ាន់, ៩,៣% លើអដ្ឋកថា និង ៥,៩% លើការបោះពុម្ពឆ្នាំ ២០០៩។"],
+  howWell2: ["Most accurate also learned three other Khmer typefaces, from lines drawn by a computer; Public domain knows only the edition's. Both learned from one transcriber's typing, including some of their habits. The Vinaya volumes read least well, and photos from a phone have not been measured yet.",
+    "ត្រឹមត្រូវបំផុត ក៏បានរៀនពុម្ពអក្សរខ្មែរបីផ្សេងទៀតដែរ ពីបន្ទាត់ដែលគូរដោយកុំព្យូទ័រ ឯកម្មសិទ្ធិសាធារណៈ ស្គាល់តែពុម្ពអក្សរនៃការបោះពុម្ពនោះប៉ុណ្ណោះ។ ទាំងពីររៀនពីការវាយអក្សររបស់អ្នកចម្លងម្នាក់ រួមទាំងទម្លាប់ខ្លះរបស់គាត់។ ភាគវិន័យអានបានខ្សោយជាងគេ ហើយរូបថតពីទូរសព្ទមិនទាន់ត្រូវបានវាស់វែងនៅឡើយទេ។"],
   checkWhat: ["Check what it reads against the print.", "សូមផ្ទៀងផ្ទាត់អ្វីដែលវាអាន ជាមួយសៀវភៅបោះពុម្ព។"],
   // shown in Khmer only (the drawing's one Khmer line saying the text below stays English)
   staysEnglish: ["", "សេចក្តីអំពីឯកជនភាព អាជ្ញាប័ណ្ណ និងការទទួលស្គាល់ ខាងក្រោមនេះ នៅជាភាសាអង់គ្លេស រហូតដល់អ្នកអានជនជាតិខ្មែរអនុម័តការបកប្រែ។"],

@@ -3,7 +3,8 @@
 // versioned names src/read/models.ts serves. At launch the released files (Hugging Face, A64) are copied in instead.
 import { cpSync, mkdirSync, existsSync } from "node:fs";
 const SRC = process.env.MODELS_SRC ?? new URL("../../../tipitaka-khmer/data/ocr-train/out/", import.meta.url).pathname;
-const MAP = { "joint-a-p4": "candidates/khm-joint-a-int", "joint-b-p4": "candidates/khm-joint-b-int" };   // pilot 4's compact models
+// pilot 5's A (released 2026-11-24) and pilot 4's B, compact
+const MAP = { "joint-a-p5": "../out5/candidates/khm-joint-a5-int", "joint-b-p4": "candidates/khm-joint-b-int" };
 mkdirSync("public/models", { recursive: true });
 for (const [name, from] of Object.entries(MAP)) {
   const f = `${SRC}${from}.traineddata`;

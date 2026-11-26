@@ -17,7 +17,12 @@ const abs = (p: string) => new URL(import.meta.env.BASE_URL + p, location.href).
 /** A crop copy larger than this gains nothing (Tesseract scales each line to its own height) and costs a phone memory. */
 const MAX_LONG_SIDE = 3400;
 /** "Not this print" (state 6): a FORECAST OF A BAD READ, never a test of provenance — a page whose lines' median confidence is
- *  below this. Calibrated 2026-11-20 on pilot 4's readers (scripts/confidence.ts): the 160 edition test pages score ≥ 55 except
+ *  below this. ✅ RE-CALIBRATED 2026-11-25 for pilot 5's A and pilot 4's B (scripts/confidence.ts on 160 edition pages, the Taiwan
+ *  re-setting 80, Pāli commentaries 30, a 2009 Khmer printing 14, 20 junk; each page's CER from the pre-registered scorer;
+ *  SW/tipitaka-khmer data/ocr5-baseline/calib-p5): 50 STAYS. It flags no page read at ≤ 5% wrong by either reader, every junk page
+ *  (blurred, sideways, upside down, noise, English: A 0 median), none of A's 124 other-printing pages (A reads them at 1.2–2.3%),
+ *  and, for B, all 30 commentary pages (9.3%) and 14 of Taiwan's 80 (9 of its 22 over 10%). Misses: 2 of A's 3 edition pages
+ *  over 10% and its 1 Taiwan page over 10%. Earlier, 2026-11-20 on pilot 4's readers: the 160 edition test pages score ≥ 55 except
  *  pages that truly read badly (25/214 at 31–38, 33% wrong; flagged, rightly); blurred, sideways, upside-down, noise and English
  *  pages score ≤ 15. At 50: A misses only a mildly blurred page (66, 13% wrong); another Khmer typeface passes on A (62, 3%
  *  wrong) and is flagged on B (21, 23% wrong). ⚠️ A faded, low-contrast page finds NO lines (state 5): the line finder's fixed
