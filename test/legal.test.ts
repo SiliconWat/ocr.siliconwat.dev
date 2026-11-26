@@ -62,7 +62,8 @@ const BANNER = "A draft, not yet reviewed by a lawyer. It may change before the 
 const AI_LINE = "Drafted with Miss Aquarius℠, an AI";
 const BANNER_KM = "សេចក្តីព្រាង ដែលមិនទាន់ត្រូវបានពិនិត្យដោយមេធាវីនៅឡើយទេ។ វាអាចផ្លាស់ប្តូរមុនកំណែចុងក្រោយ។ អត្ថបទច្បាប់មានតែជាភាសាអង់គ្លេសប៉ុណ្ណោះ។";
 const AI_LINE_KM = "រៀបចំជាមួយ Miss Aquarius℠ ដែលជា AI";
-const CHANGES = "A change is a new version with its own date, published at legal.333.eco, where every version stays.";
+// Reworded the same day (founder 2026-11-26, "Reword it everywhere"): "a new version" is barred as a novelty claim.
+const CHANGES = "Each change is published as its own version with its own date, at legal.333.eco, where every version stays.";
 /** The page's words as a reader sees them: tags dropped, spacing folded. */
 const words = (html: string) => html.replace(/<[^>]+>/g, "").replace(/\s+/g, " ");
 const noteOk = (html: string) =>
@@ -90,6 +91,7 @@ test("CONTROL: a page without the AI line fails the check", () => {
 test("the Changes section carries the ruled promise, word for word", () => {
   assert.match(md, new RegExp(`\\n## Changes\\n\\n${CHANGES.replace(/[.]/g, "\\.")}\\n`));
   assert.doesNotMatch(md, /We will post changes here/);
+  assert.doesNotMatch(md, /a new version/i, "the withdrawn wording (2026-11-26)");
 });
 test("the line to every version on legal.333.eco: outside the document, in the page's language", () => {
   assert.equal(LEGAL_URL, "https://legal.333.eco/ocr.siliconwat.dev/terms/");
