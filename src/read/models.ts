@@ -17,5 +17,10 @@ export const MODELS: Record<ModelId, ModelFiles> = {
   // B, trained from scratch on the transcriber's own text (CC0), still pilot 4's (pilot 5's B5 missed two bars and was not
   // released): edition 2.1% · 2.2%, the Taiwan re-setting 7.4% · 10.1%, commentaries 9.3%, the 2009 printing 5.9%.
   public: { pali: "joint-b-p4", khmer: "joint-b-p4" },
+  // B5, pilot 5's B (CC0): ⚠️ NOT released by the pre-registered rule — it missed three bars by under 0.3 points (compact: Taiwan
+  // re-setting 3.02% · 3.28%, the 2009 printing 3.27%, bar 3.0%). Offered BESIDE pilot 4's B by the founder's call made AFTER the
+  // results (2026-11-25: "possible to keep both?" → "Hugging Face and the site"; SW/tipitaka-khmer pilot/ocr5-2026-11-23/
+  // DECISION-2026-11-25.md). Compact, median CER: edition 2.2% · 2.3%, Taiwan re-setting 3.0% · 3.3%, commentaries 2.8%, 2009 3.3%.
+  publicOther: { pali: "joint-b-p5", khmer: "joint-b-p5" },
 };
 export const fileFor = (m: ModelId, leaf: Leaf) => MODELS[m][leaf];

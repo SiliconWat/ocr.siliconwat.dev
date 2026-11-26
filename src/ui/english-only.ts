@@ -10,7 +10,7 @@ export const PRIVACY =
   "Two things leave only when you press: a passage you choose to hear (to our voice service and Azure) and a passage " +
   "you ask about (to the assistant you chose). Visits are counted without cookies, and the count never sees an image or a word.";
 export const LICENSES =
-  "Most accurate: Apache-2.0. Public domain: CC0. The license matters only if you share a model file itself. " +
+  "Most accurate: Apache-2.0. Both Public domain readers: CC0. The license matters only if you share a model file itself. " +
   "The page images used in training are not released; the transcriber's typed text is published as a dataset (CC0), crediting the Buddhist Institute.";
 /** The released models and data (founder 2026-11-23: "Footer link + About section"; the footer's "Models and data" opens
  *  #models, this list). English only, beside the licenses they name. */

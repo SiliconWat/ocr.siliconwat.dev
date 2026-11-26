@@ -54,7 +54,7 @@ export class OcrEmpty extends Light {
     if (fs.length && !this.opening) this.emit<File[]>("files", fs);
   }
 
-  private radio(id: ModelId, name: "accurate" | "public", sub: "accurateSub" | "publicSub", lic: string) {
+  private radio(id: ModelId, name: ModelId, sub: "accurateSub" | "publicSub" | "publicOtherSub", lic: string) {
     return html`<label class="flex cursor-pointer items-start gap-12 border-t border-line py-11 first:border-t-0 first:pt-2">
       <input type="radio" name="model" value=${id} .checked=${this.model === id} @change=${() => this.emit("model", id)}
         class="mt-0 size-24 flex-none cursor-pointer appearance-none rounded-pill border-2 border-line-strong checked:border-7 checked:border-accent" />
@@ -97,6 +97,7 @@ export class OcrEmpty extends Light {
           <div class="card clear-both">
             ${this.radio("accurate", "accurate", "accurateSub", "Apache-2.0")}
             ${this.radio("public", "public", "publicSub", "CC0")}
+            ${this.radio("publicOther", "publicOther", "publicOtherSub", "CC0")}
             <p class="fine mt-6 mb-0">${t("licenseNote")}</p>
           </div>
         </fieldset>

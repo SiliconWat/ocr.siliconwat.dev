@@ -47,7 +47,7 @@ darkQuery?.addEventListener("change", paint);
 
 // ── reader choice ─────────────────────────────────────────────────────────────────────────────────────────────────────
 export function modelChoice(): ModelId {
-  return store.get(KEYS.model) === "public" ? "public" : "accurate";
+  const m = store.get(KEYS.model); return m === "public" || m === "publicOther" ? m : "accurate";
 }
 export function setModel(m: ModelId) {
   if (m === "accurate") store.del(KEYS.model); else store.set(KEYS.model, m);

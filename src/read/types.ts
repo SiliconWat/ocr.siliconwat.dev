@@ -1,9 +1,9 @@
 /** The one contract between the reader (src/read/, src/dict/, src/listen.ts) and the screens (src/ui/). The screens import
  *  ONLY from src/read/index.ts, src/dict/index.ts and src/listen.ts, never from the files behind them. */
 
-/** The two readers, as the page names them: "accurate" = Most accurate (fine-tuned, Apache-2.0) · "public" = Public domain
- *  (trained from scratch, CC0). */
-export type ModelId = "accurate" | "public";
+/** The readers, as the page names them: "accurate" = Most accurate (fine-tuned, Apache-2.0) · "public" = Public domain
+ *  (trained from scratch, CC0) · "publicOther" = Public domain, other printings (CC0; founder 2026-11-25, "keep both"). */
+export type ModelId = "accurate" | "public" | "publicOther";
 /** Which leaf of the opening a page is: the Pāli, or its Khmer translation. Both are printed in Khmer script. */
 export type Leaf = "pali" | "khmer";
 

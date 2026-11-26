@@ -41,7 +41,7 @@ export class OcrProgress extends Light {
       <div class="btn opacity-88" role="status" aria-label=${t("working")}>${dots()}</div>
       <div class="card mt-14">
         ${spot("device")}
-        <h2>${t(this.model === "public" ? "public" : "accurate")}</h2>
+        <h2>${t(this.model)}</h2>
         <p>${t("fromSite")}</p>
       </div>
     </div>`;
