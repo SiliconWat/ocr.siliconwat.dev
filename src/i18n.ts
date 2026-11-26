@@ -20,6 +20,10 @@ const S = {
   // NOT DRAWN (A709 M2, founder 2026-11-25): the line under Privacy and terms, outside the document, before its link to
   // legal.333.eco; our words, our Khmer draft
   legalVersions: ["Every version of this document, timestamped:", "គ្រប់កំណែនៃឯកសារនេះ បោះត្រាពេលវេលា៖"],
+  // Shown in Khmer only, beside Privacy and terms' English notice (founder 2026-11-26, "approve all": the shared clauses' ONE
+  // Khmer draft banner and AI line, legal.333.eco §clause-rulings items 2 and 3); our Khmer draft
+  draftBanner: ["", "សេចក្តីព្រាង ដែលមិនទាន់ត្រូវបានពិនិត្យដោយមេធាវីនៅឡើយទេ។ វាអាចផ្លាស់ប្តូរមុនកំណែចុងក្រោយ។ អត្ថបទច្បាប់មានតែជាភាសាអង់គ្លេសប៉ុណ្ណោះ។"],
+  draftedWith: ["", "រៀបចំជាមួយ Miss Aquarius℠ ដែលជា AI"],
   // NOT DRAWN (founder 2026-11-23: a footer link to the models on Hugging Face): our words, our Khmer draft
   modelsLink: ["Models and data", "ម៉ូដែល និងទិន្នន័យ"],
   visits: ["Visits are counted without cookies.", "ការចូលមើលត្រូវបានរាប់ដោយគ្មានខូគី។"],

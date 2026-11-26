@@ -30,6 +30,8 @@ export const CREDITS: [string, string][] = [
  *  publishes version by version; src/ui/legal-terms.ts is generated from it (scripts/gen-legal.mjs). Edit the markdown, never
  *  these names. */
 export { CONTACT, TERMS, TERMS_DATE_LINE, TERMS_TITLE } from "./legal-terms";
-/** The page's notice beside the document's own date line: the frame's words, not the document's. */
-export const NOT_REVIEWED = "Not yet reviewed by a lawyer.";
+/** The page's notice beside the document's own date line: the frame's words, not the document's. The draft banner and the AI
+ *  line are the shared clauses' ONE wording (founder 2026-11-26, "approve all"; legal.333.eco §clause-rulings items 2 and 3). */
+export const NOT_REVIEWED = "A draft, not yet reviewed by a lawyer. It may change before the final version.";
 export const TERMS_DRAFT = `${TERMS_DATE_LINE} ${NOT_REVIEWED}`;
+export const DRAFTED_WITH = "Drafted with Miss Aquarius℠, an AI";

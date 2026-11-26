@@ -1,6 +1,6 @@
 # Privacy and terms
 
-Draft of 20 November 2026.
+Draft of 26 November 2026.
 
 ## Who runs this page
 
@@ -44,6 +44,6 @@ Warranties, limits on liability, which law applies, and how disputes are handled
 
 ## Changes
 
-We will post changes here with a new date.
+A change is a new version with its own date, published at legal.333.eco, where every version stays.
 
 Contact: support@siliconwat.dev
