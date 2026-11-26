@@ -56,8 +56,42 @@ test("CONTROL: a render that drops a line is caught", () => {
   assert.notEqual(dropped, html);
   assert.equal(missingFromServed(md, dropped).length, 1);
 });
-test("the not-reviewed notice and the date line sit together in the frame's note", () => {
-  assert.match(rendered("en"), /<div class="note">Draft of \d{1,2} [A-Z][a-z]+ \d{4}\. Not yet reviewed by a lawyer\.<\/div>/);
+/** The shared clauses (founder 2026-11-26, "approve all": legal.333.eco §clause-rulings), word for word. The banner and the AI
+ *  line are the page's frame, never the document; the Changes promise is the document's own. */
+const BANNER = "A draft, not yet reviewed by a lawyer. It may change before the final version.";
+const AI_LINE = "Drafted with Miss Aquarius℠, an AI";
+const BANNER_KM = "សេចក្តីព្រាង ដែលមិនទាន់ត្រូវបានពិនិត្យដោយមេធាវីនៅឡើយទេ។ វាអាចផ្លាស់ប្តូរមុនកំណែចុងក្រោយ។ អត្ថបទច្បាប់មានតែជាភាសាអង់គ្លេសប៉ុណ្ណោះ។";
+const AI_LINE_KM = "រៀបចំជាមួយ Miss Aquarius℠ ដែលជា AI";
+// Reworded the same day (founder 2026-11-26, "Reword it everywhere"): "a new version" is barred as a novelty claim.
+const CHANGES = "Each change is published as its own version with its own date, at legal.333.eco, where every version stays.";
+/** The page's words as a reader sees them: tags dropped, spacing folded. */
+const words = (html: string) => html.replace(/<[^>]+>/g, "").replace(/\s+/g, " ");
+const noteOk = (html: string) =>
+  new RegExp(`<div class="note">Draft of \\d{1,2} [A-Z][a-z]+ \\d{4}\\. ${BANNER.replace(/[.]/g, "\\.")}</div>`).test(html);
+test("the ruled draft banner sits with the date line in the frame's note", () => {
+  assert.ok(noteOk(rendered("en")), "the note: the date line, then the ruled banner");
+  assert.ok(noteOk(rendered("km")), "the note in Khmer mode too (the document stays English)");
+});
+test("CONTROL: the old notice fails the banner check", () => {
+  const old = rendered("en").replace(BANNER, "Not yet reviewed by a lawyer.");
+  assert.notEqual(old, rendered("en"));
+  assert.ok(!noteOk(old));
+});
+test("the AI line beside the banner, in English; in Khmer mode the Khmer banner and AI line too", () => {
+  const en = words(rendered("en")), km = words(rendered("km"));
+  assert.ok(en.includes(AI_LINE) && km.includes(AI_LINE), "the English AI line in both languages");
+  assert.ok(en.indexOf(AI_LINE) > en.indexOf(BANNER) && en.indexOf(AI_LINE) < en.indexOf("Who runs this page"), "beside the banner, before the text");
+  assert.ok(km.includes(BANNER_KM) && km.includes(AI_LINE_KM), "the Khmer banner and AI line in Khmer mode");
+  assert.ok(!en.includes(BANNER_KM) && !en.includes(AI_LINE_KM), "no Khmer banner on the English page");
+  assert.ok(!md.includes("Miss Aquarius"), "the AI line is the frame's, never the document's");
+});
+test("CONTROL: a page without the AI line fails the check", () => {
+  assert.ok(!words(rendered("en").replace("Drafted with", "Written by")).includes(AI_LINE));
+});
+test("the Changes section carries the ruled promise, word for word", () => {
+  assert.match(md, new RegExp(`\\n## Changes\\n\\n${CHANGES.replace(/[.]/g, "\\.")}\\n`));
+  assert.doesNotMatch(md, /We will post changes here/);
+  assert.doesNotMatch(md, /a new version/i, "the withdrawn wording (2026-11-26)");
 });
 test("the line to every version on legal.333.eco: outside the document, in the page's language", () => {
   assert.equal(LEGAL_URL, "https://legal.333.eco/ocr.siliconwat.dev/terms/");
@@ -65,7 +99,8 @@ test("the line to every version on legal.333.eco: outside the document, in the p
   for (const html of [en, km]) assert.equal(html.split(`href="${LEGAL_URL}"`).length - 1, 1);
   assert.match(en, /lang="en">Every version of this document, timestamped: <a [^>]*>legal\.333\.eco<\/a><\/p>/);
   assert.match(km, /lang="km">គ្រប់កំណែនៃឯកសារនេះ បោះត្រាពេលវេលា៖ <a [^>]*>legal\.333\.eco<\/a><\/p>/);
-  assert.ok(!md.includes("legal.333.eco") && !md.includes("Every version"), "the line is the frame's, never the document's");
+  // The ruled Changes promise (2026-11-26) names legal.333.eco inside the document; the frame's line and its link stay outside.
+  assert.ok(!md.includes(LEGAL_URL) && !md.includes("Every version"), "the line is the frame's, never the document's");
 });
 test("the renderer refuses what it cannot draw, never drops it", () => {
   const at = md.indexOf("## Fair use");
@@ -94,7 +129,8 @@ test("the static page: the site's head and CSP, its own address, the note and th
   assert.match(page, /<title>Privacy and terms · ocr\.siliconwat\.dev<\/title>/);
   assert.ok(page.includes(`<link rel="canonical" href="${TERMS_PAGE_URL}">`) && page.includes(`<meta property="og:url" content="${TERMS_PAGE_URL}">`));
   assert.doesNotMatch(page, /hreflang/);
-  assert.match(page, /<div class="note">Draft of \d{1,2} [A-Z][a-z]+ \d{4}\. Not yet reviewed by a lawyer\.<\/div>/);
+  assert.ok(noteOk(page), "the note: the date line, then the ruled banner");
+  assert.ok(words(page).includes(AI_LINE), "the AI line beside it");
   assert.equal(page.split(`href="${LEGAL_URL}"`).length - 1, 1);
   assert.doesNotMatch(page, /[ក-៿]/, "no Khmer on the English-only page");
   assert.match(page, /<path d="M8\.5 8h7M8\.5 12h7M8\.5 16h4\.5"/, "attribute values are quoted");
