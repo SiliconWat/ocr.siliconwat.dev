@@ -57,13 +57,18 @@ test("CONTROL: a render that drops a line is caught", () => {
   assert.equal(missingFromServed(md, dropped).length, 1);
 });
 /** The shared clauses (founder 2026-11-26, "approve all": legal.333.eco §clause-rulings), word for word. The banner and the AI
- *  line are the page's frame, never the document; the Changes promise is the document's own. */
-const BANNER = "A draft, not yet reviewed by a lawyer. It may change before the final version.";
-const AI_LINE = "Drafted with Miss Aquarius℠, an AI";
-const BANNER_KM = "សេចក្តីព្រាង ដែលមិនទាន់ត្រូវបានពិនិត្យដោយមេធាវីនៅឡើយទេ។ វាអាចផ្លាស់ប្តូរមុនកំណែចុងក្រោយ។ អត្ថបទច្បាប់មានតែជាភាសាអង់គ្លេសប៉ុណ្ណោះ។";
-const AI_LINE_KM = "រៀបចំជាមួយ Miss Aquarius℠ ដែលជា AI";
+ *  line are the page's frame, never the document; the Changes promise is the document's own. The wordings are read from
+ *  legal/clauses.json, vendored from legal.333.eco (founder 2026-11-26, "Build it now"), never typed here: a page that drifts
+ *  from the one ruled wording fails these tests, and `npm test` first runs scripts/check-clauses.mjs, which fails on any hand
+ *  edit of the vendored file. */
+const CLAUSES: Record<string, { text: string }> = JSON.parse(readFileSync(new URL("../legal/clauses.json", import.meta.url), "utf8")).wordings;
+const ruled = (id: string) => { const w = CLAUSES[id]; assert.ok(w, `legal/clauses.json has no ${id}`); return w.text; };
+const BANNER = ruled("draft-banner/en");
+const AI_LINE = ruled("ai-disclosure/en");
+const BANNER_KM = ruled("draft-banner/km");
+const AI_LINE_KM = ruled("ai-disclosure/km");
 // Reworded the same day (founder 2026-11-26, "Reword it everywhere"): "a new version" is barred as a novelty claim.
-const CHANGES = "Each change is published as its own version with its own date, at legal.333.eco, where every version stays.";
+const CHANGES = ruled("changes/en");
 /** The page's words as a reader sees them: tags dropped, spacing folded. */
 const words = (html: string) => html.replace(/<[^>]+>/g, "").replace(/\s+/g, " ");
 const noteOk = (html: string) =>

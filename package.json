@@ -7,10 +7,10 @@
   "scripts": {
     "predev": "node scripts/vendor.mjs && node scripts/check-models.mjs --dev",
     "dev": "vite",
-    "build": "node scripts/vendor.mjs && node scripts/check-models.mjs && node scripts/gen-legal.mjs --check && tsc --noEmit && vite build && tsx scripts/build-terms-page.ts && node scripts/build-sw.mjs",
-    "build:dev": "node scripts/vendor.mjs && node scripts/check-models.mjs --dev && node scripts/gen-legal.mjs --check && tsc --noEmit && vite build && tsx scripts/build-terms-page.ts && node scripts/build-sw.mjs",
+    "build": "node scripts/vendor.mjs && node scripts/check-models.mjs && node scripts/check-clauses.mjs && node scripts/gen-legal.mjs --check && tsc --noEmit && vite build && tsx scripts/build-terms-page.ts && node scripts/build-sw.mjs",
+    "build:dev": "node scripts/vendor.mjs && node scripts/check-models.mjs --dev && node scripts/check-clauses.mjs && node scripts/gen-legal.mjs --check && tsc --noEmit && vite build && tsx scripts/build-terms-page.ts && node scripts/build-sw.mjs",
     "preview": "vite preview",
-    "test": "tsx --test test/*.test.ts",
+    "test": "node scripts/check-clauses.mjs && tsx --test test/*.test.ts",
     "legal": "node scripts/gen-legal.mjs",
     "legal-check": "node scripts/legal-check.mjs",
     "parity": "tsx scripts/parity.ts",
